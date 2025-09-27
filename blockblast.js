@@ -379,6 +379,7 @@ Features:
     const touch = e.touches[0];
     mouseX = (touch.clientX - rect.left) * (W / rect.width);
     mouseY = (touch.clientY - rect.top) * (H / rect.height);
+    console.log(`Touch move to: ${mouseX}, ${mouseY}`);
   });
   canvas.addEventListener('touchend', e => {
     e.preventDefault();
@@ -406,7 +407,7 @@ Features:
       const initial_piece_top = yOffset;
       offsetX = mouseX - initial_piece_left;
       offsetY = mouseY - initial_piece_top;
-      console.log(`Desktop: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}`);
+      console.log(`Desktop: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}, mouse: ${mouseX}, ${mouseY}`);
     } else {
       if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
@@ -424,7 +425,7 @@ Features:
       const initial_piece_top = bottomY + yOffset;
       offsetX = mouseX - initial_piece_left;
       offsetY = mouseY - initial_piece_top;
-      console.log(`Mobile: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}`);
+      console.log(`Mobile: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}, mouse: ${mouseX}, ${mouseY}`);
     }
   }
 
@@ -469,19 +470,17 @@ Features:
       topY = 0;
       gameHeight = H;
       bottomY = 0;
+      console.log(`Desktop layout: W=${W}, H=${H}, gameWidth=${gameWidth}, gameHeight=${gameHeight}, leftX=${leftX}`);
     } else {
       topY = 0;
       leftX = 0;
       gameWidth = W;
       const minPieceHeight = 120; // Minimum height for piece selection area
-      gameHeight = H - minPieceHeight;
-      const cellSize = W / GRID_SIZE;
+      const cellSize = W / GRID_SIZE; // Base cell size on width
       let gridHeight = cellSize * GRID_SIZE;
-      if (gridHeight > gameHeight) {
-        cellSize = gameHeight / GRID_SIZE;
-        gridHeight = cellSize * GRID_SIZE;
-      }
-      bottomY = topY + gridHeight;
+      gameHeight = Math.min(H - minPieceHeight, gridHeight); // Ensure space for pieces
+      bottomY = topY + gameHeight;
+      console.log(`Mobile layout: W=${W}, H=${H}, gameWidth=${gameWidth}, gameHeight=${gameHeight}, bottomY=${bottomY}, cellSize=${cellSize}`);
     }
   }
 
@@ -504,6 +503,7 @@ Features:
     const gridHeight = cellSize * GRID_SIZE;
     const gameX = leftX + (gameWidth - gridWidth) / 2;
     const gameY = topY + (gameHeight - gridHeight) / 2;
+    console.log(`Render: gameX=${gameX}, gameY=${gameY}, gridWidth=${gridWidth}, gridHeight=${gridHeight}, cellSize=${cellSize}`);
 
     // Draw pieces area
     if (window.innerWidth > 820) {
@@ -612,8 +612,8 @@ Features:
       const { shape, hue } = selectedPiece.piece;
       const maxR = shape.length;
       const maxC = Math.max(...shape.map(row => row.length));
-      const pCell = cellSize; // Use game cell size for dragged piece
-      const pPadding = padding;
+      const pCell = cellSize * 0.8; // Match game grid cell size
+      const pPadding = pCell * 0.1;
       const x = mouseX - offsetX;
       const y = mouseY - offsetY;
       selectedPiece.row = Math.round((y - gameY) / cellSize);
@@ -633,6 +633,7 @@ Features:
         }
       }
       ctx.restore();
+      console.log(`Dragging piece: x=${x}, y=${y}, offsetX=${offsetX}, offsetY=${offsetY}, row=${selectedPiece.row}, col=${selectedPiece.col}`);
     }
 
     // Draw animations
