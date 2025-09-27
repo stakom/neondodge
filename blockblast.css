@@ -6,12 +6,15 @@
   --accent: #ffcccb;
   --muted: rgba(207,239,255,0.65);
 }
+
 html, body {
   height: 100%;
   margin: 0;
   font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
   overflow: hidden;
+  touch-action: none; /* Prevent scrolling/zooming */
 }
+
 body {
   background: radial-gradient(600px 240px at 10% 10%, rgba(255,111,97,0.02), transparent),
               radial-gradient(500px 200px at 90% 90%, rgba(107,91,149,0.015), transparent),
@@ -38,6 +41,7 @@ header {
   gap: 10px;
   margin-bottom: 4px;
 }
+
 .logo {
   font-size: 28px;
   font-weight: 900;
@@ -49,11 +53,13 @@ header {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .brand {
   display: flex;
   gap: 10px;
   align-items: center;
 }
+
 .game-logo {
   width: 48px;
   height: 48px;
@@ -67,6 +73,7 @@ header {
   font-size: 18px;
   box-shadow: 0 8px 30px rgba(255,111,97,0.08);
 }
+
 h1 {
   margin: 0;
   color: #fff;
@@ -74,6 +81,7 @@ h1 {
   font-size: 24px;
   letter-spacing: 0.5px;
 }
+
 .subtitle {
   font-size: 12px;
   color: var(--muted);
@@ -86,6 +94,7 @@ h1 {
   box-shadow: 0 6px 24px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.02);
 }
+
 canvas {
   width: 100%;
   max-height: 70vh;
@@ -93,9 +102,9 @@ canvas {
   display: block;
   border-radius: 8px;
   background: transparent;
-  min-height: 400px; /* Ensure minimum height for visibility */
+  min-height: 360px; /* Adjusted for better mobile visibility */
   position: relative;
-  z-index: 1; /* Ensure canvas is below UI */
+  z-index: 1;
 }
 
 .ui {
@@ -104,29 +113,34 @@ canvas {
   gap: 10px;
   position: sticky;
   top: 12px;
-  z-index: 10; /* Ensure UI is above canvas */
+  z-index: 10;
 }
+
 .panel {
   background: var(--panel);
   border-radius: 10px;
   padding: 10px;
   backdrop-filter: blur(6px);
 }
+
 .panel h2 {
   margin: 0;
   color: #fff;
   font-size: 18px;
 }
+
 .muted {
   color: var(--muted);
   font-size: 12px;
 }
+
 .controls {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
+
 .btn {
   padding: 8px 10px;
   border-radius: 8px;
@@ -136,13 +150,16 @@ canvas {
   cursor: pointer;
   transition: all .12s ease;
 }
+
 .btn.primary {
   border-color: var(--neon1);
   box-shadow: 0 6px 24px rgba(255,111,97,0.06);
 }
+
 .btn:hover {
   transform: translateY(-2px);
 }
+
 .score-row {
   display: flex;
   justify-content: space-between;
@@ -150,6 +167,7 @@ canvas {
   padding: 6px 0;
   border-bottom: 1px dashed rgba(255,255,255,0.03);
 }
+
 .score-big {
   font-size: 18px;
   font-weight: 800;
@@ -163,10 +181,12 @@ footer {
   color: var(--muted);
   font-size: 12px;
 }
+
 footer a {
   color: var(--neon1);
   text-decoration: none;
 }
+
 footer a:hover {
   text-decoration: underline;
 }
@@ -191,6 +211,26 @@ footer a:hover {
     font-size: 11px;
   }
   canvas {
-    min-height: 350px; /* Adjusted for smaller screens */
+    min-height: 320px; /* Adjusted for smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  canvas {
+    min-height: 300px;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  .game-logo {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  .panel h2 {
+    font-size: 16px;
+  }
+  .score-big {
+    font-size: 16px;
   }
 }

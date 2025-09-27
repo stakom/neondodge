@@ -14,7 +14,7 @@ Features:
 (() => {
   // Game constants and variables
   const GRID_SIZE = 8;
-  let W, H, leftX, gameWidth, topY, gameHeight;
+  let W, H, leftX, gameWidth, topY, gameHeight, bottomY;
   let running = false;
   let score = 0;
   let best = parseInt(localStorage.getItem('blockblast_best') || '0', 10);
@@ -23,8 +23,8 @@ Features:
   let selectedPiece = null;
   let gameOver = false;
   let mouseX = 0, mouseY = 0, offsetX = 0, offsetY = 0, isDragging = false;
-  const animations = []; // For placement and clear animations
-  const particles = []; // For clear explosions
+  const animations = [];
+  const particles = [];
 
   // Canvas setup
   const canvas = document.getElementById('canvas');
@@ -39,9 +39,10 @@ Features:
     const rect = canvas.getBoundingClientRect();
     canvas.width = Math.max(400, Math.floor(rect.width * DPR));
     canvas.height = Math.max(400, Math.floor(rect.height * DPR));
-    W = canvas.width; H = canvas.height;
-    updateLayout(); // Recalculate layout on resize
-    render(); // Re-render on resize to maintain visibility
+    W = canvas.width;
+    H = canvas.height;
+    updateLayout();
+    render();
   }
   canvas.style.width = '100%';
   resize();
@@ -199,7 +200,6 @@ Features:
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c]) {
           grid[row + r][col + c] = hue;
-          // Add placement animation with easing
           animations.push({ type: 'placement', r: row + r, c: col + c, hue, age: 0, life: 0.4, scale: 0 });
         }
       }
@@ -210,10 +210,10 @@ Features:
     if (cleared > 0) {
       score += cleared * 100;
       if (cleared > 1) score += (cleared - 1) * 50;
-      playLineDestructionSound(); // Sound for line destruction
+      playLineDestructionSound();
     }
     pieces.splice(selectedPiece.index, 1);
-    generatePieces(); // Generate new set of 3 pieces
+    generatePieces();
     selectedPiece = null;
     checkGameOver();
     updateScore();
@@ -224,21 +224,18 @@ Features:
     let cleared = 0;
     let toClearRows = [];
     let toClearCols = [];
-    // Identify full rows
     for (let r = 0; r < GRID_SIZE; r++) {
       if (grid[r].every(cell => cell !== 0)) {
         toClearRows.push(r);
         cleared++;
       }
     }
-    // Identify full columns
     for (let c = 0; c < GRID_SIZE; c++) {
       if (grid.every(row => row[c] !== 0)) {
         toClearCols.push(c);
         cleared++;
       }
     }
-    // Add clear animations and particles with easing
     toClearRows.forEach(r => {
       for (let c = 0; c < GRID_SIZE; c++) {
         animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
@@ -247,12 +244,13 @@ Features:
     });
     toClearCols.forEach(c => {
       for (let r = 0; r < GRID_SIZE; r++) {
-        animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
-        spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, 5, 1.2);
+        if (!toClearRows.includes(r)) { // Avoid duplicating animations
+          animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
+          spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, 5, 1.2);
+        }
       }
     });
     playClearSound();
-    // Clear the grid after animation setup
     toClearRows.forEach(r => grid[r].fill(0));
     toClearCols.forEach(c => {
       for (let r = 0; r < GRID_SIZE; r++) {
@@ -309,7 +307,7 @@ Features:
     scoreEl.textContent = score;
   }
 
-  // Update animations and particles with easing
+  // Update animations and particles
   function updateAnimations(dt) {
     for (let i = animations.length - 1; i >= 0; i--) {
       const anim = animations[i];
@@ -317,9 +315,9 @@ Features:
       const progress = Math.min(1, anim.age / anim.life);
       const easedProgress = easeInOutQuad(progress);
       if (anim.type === 'placement') {
-        anim.scale = easedProgress * 1.2; // Scale in smoothly
+        anim.scale = easedProgress * 1.2;
       } else if (anim.type === 'clear') {
-        anim.alpha = 1 - easedProgress; // Fade out smoothly
+        anim.alpha = 1 - easedProgress;
       }
       if (anim.age >= anim.life) {
         animations.splice(i, 1);
@@ -330,15 +328,16 @@ Features:
       pa.age += dt;
       pa.x += pa.vx;
       pa.y += pa.vy;
-      pa.vy += 0.2 * dt; // Gravity with time scaling
+      pa.vy += 0.2 * dt;
       if (pa.age >= pa.life) {
         particles.splice(i, 1);
       }
     }
   }
 
-  // Input handling for dragging
+  // Input handling
   canvas.addEventListener('mousedown', e => {
+    e.preventDefault();
     if (!running || gameOver) return;
     const rect = canvas.getBoundingClientRect();
     mouseX = (e.clientX - rect.left) * (W / rect.width);
@@ -347,11 +346,13 @@ Features:
     isDragging = !!selectedPiece;
   });
   canvas.addEventListener('mousemove', e => {
+    e.preventDefault();
     const rect = canvas.getBoundingClientRect();
     mouseX = (e.clientX - rect.left) * (W / rect.width);
     mouseY = (e.clientY - rect.top) * (H / rect.height);
   });
   canvas.addEventListener('mouseup', e => {
+    e.preventDefault();
     if (!isDragging) return;
     isDragging = false;
     placePiece();
@@ -380,10 +381,9 @@ Features:
     placePiece();
   });
 
-  // Select a piece from the left (desktop) or bottom (mobile) area
+  // Select a piece
   function selectPiece() {
     if (window.innerWidth > 820) {
-      // Desktop: left area
       if (mouseX > leftX) return;
       const pieceWidth = leftX / 3;
       const pieceHeight = gameHeight / 3;
@@ -397,10 +397,9 @@ Features:
       offsetX = mouseX - ((pieceWidth - maxC * pCell) / 2 + (maxC * pCell) / 2);
       offsetY = mouseY - (index * pieceHeight + (pieceHeight - maxR * pCell) / 2 + (maxR * pCell) / 2);
     } else {
-      // Mobile: bottom area
       if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = (H - bottomY) / 1; // Full bottom area height
+      const pieceHeight = (H - bottomY);
       const index = Math.floor(mouseX / pieceWidth);
       if (index < 0 || index >= pieces.length) return;
       selectedPiece = { piece: pieces[index], index, row: 0, col: 0 };
@@ -415,14 +414,14 @@ Features:
 
   // UI buttons
   btnStart.addEventListener('click', () => {
-    console.log('Start button clicked'); // Debug log
+    console.log('Start button clicked');
     grid.forEach(row => row.fill(0));
     score = 0;
     gameOver = false;
     running = true;
     generatePieces();
     updateScore();
-    render(); // Force render to reflect new state
+    render();
   });
 
   btnBack.addEventListener('click', () => {
@@ -435,24 +434,21 @@ Features:
   // Update layout
   function updateLayout() {
     if (window.innerWidth > 820) {
-      // Desktop layout
-      leftX = W * 0.25; // 25% of width for piece selection
-      gameWidth = W * 0.75; // 75% of width for game grid
+      leftX = W * 0.25;
+      gameWidth = W * 0.75;
       topY = 0;
       gameHeight = H;
-      bottomY = 0; // Not used on desktop
+      bottomY = 0;
     } else {
-      // Mobile layout: pieces at bottom
       topY = 0;
       gameWidth = W;
-      gameHeight = H * 0.7; // 70% of height for game grid to ensure full visibility
+      gameHeight = H * 0.75; // Increased for better visibility
       leftX = 0;
-      bottomY = H * 0.7; // 30% of height for piece selection at bottom
+      bottomY = H * 0.75;
     }
   }
 
   // Rendering
-  let bottomY;
   function drawRoundedRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -464,19 +460,16 @@ Features:
   }
 
   function render() {
-    ctx.clearRect(0, 0, W, H); // Full clear to prevent overlap
-    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE); // Ensure square cells
+    ctx.clearRect(0, 0, W, H);
+    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE);
     const padding = cellSize * 0.1;
     const gridWidth = cellSize * GRID_SIZE;
     const gridHeight = cellSize * GRID_SIZE;
-
-    // Adjust game area to fit 8x8 grid
     const gameX = leftX + (gameWidth - gridWidth) / 2;
     const gameY = topY + (gameHeight - gridHeight) / 2;
 
-    // Draw pieces area (left for desktop, bottom for mobile)
+    // Draw pieces area
     if (window.innerWidth > 820) {
-      // Desktop: left area
       ctx.save();
       ctx.shadowBlur = 8;
       ctx.shadowColor = 'rgba(255,255,255,0.1)';
@@ -509,7 +502,6 @@ Features:
         ctx.restore();
       }
     } else {
-      // Mobile: bottom area
       ctx.save();
       ctx.shadowBlur = 8;
       ctx.shadowColor = 'rgba(255,255,255,0.1)';
@@ -517,7 +509,7 @@ Features:
       ctx.fillRect(0, bottomY, W, H - bottomY);
       ctx.restore();
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = (H - bottomY) / 1; // Full bottom area height
+      const pieceHeight = (H - bottomY);
       for (let i = 0; i < pieces.length; i++) {
         const shape = pieces[i].shape;
         const hue = pieces[i].hue;
@@ -543,30 +535,24 @@ Features:
       }
     }
 
-    // Draw game grid background with glow
+    // Draw game grid
     ctx.save();
     ctx.shadowBlur = 8;
     ctx.shadowColor = 'rgba(255,255,255,0.1)';
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    ctx.fillRect(gameX, gameY, gridWidth, gridHeight); // Game grid area
+    ctx.fillRect(gameX, gameY, gridWidth, gridHeight);
     ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
-      const yPos = gameY + i * cellSize;
-      if (yPos < gameY + gridHeight) { // Limit vertical lines
-        ctx.beginPath();
-        ctx.moveTo(gameX + i * cellSize, gameY);
-        ctx.lineTo(gameX + i * cellSize, gameY + gridHeight);
-        ctx.stroke();
-      }
-      const xPos = gameX + i * cellSize;
-      if (xPos < gameX + gridWidth) { // Limit horizontal lines
-        ctx.beginPath();
-        ctx.moveTo(gameX, gameY + i * cellSize);
-        ctx.lineTo(gameX + gridWidth, gameY + i * cellSize);
-        ctx.stroke();
-      }
+      ctx.beginPath();
+      ctx.moveTo(gameX + i * cellSize, gameY);
+      ctx.lineTo(gameX + i * cellSize, gameY + gridHeight);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(gameX, gameY + i * cellSize);
+      ctx.lineTo(gameX + gridWidth, gameY + i * cellSize);
+      ctx.stroke();
     }
 
     // Draw placed blocks
@@ -612,7 +598,7 @@ Features:
       ctx.restore();
     }
 
-    // Draw animations with easing
+    // Draw animations
     animations.forEach(anim => {
       ctx.save();
       const progress = Math.min(1, anim.age / anim.life);
@@ -631,14 +617,14 @@ Features:
         ctx.globalAlpha = anim.alpha * (1 - easedProgress);
         ctx.shadowBlur = 16 * easedProgress;
         ctx.shadowColor = `hsl(${anim.hue} 90% 60% / ${1 - easedProgress})`;
-        ctx.fillStyle = `hsl${anim.hue} 90% 60%)`;
+        ctx.fillStyle = `hsl(${anim.hue} 90% 60%)`;
         drawRoundedRect(gameX + anim.c * cellSize + padding, gameY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * (1 - easedProgress));
         ctx.fill();
       }
       ctx.restore();
     });
 
-    // Draw particles with boundary check
+    // Draw particles
     particles.forEach(pa => {
       ctx.save();
       const progress = pa.age / pa.life;
@@ -658,10 +644,10 @@ Features:
       ctx.fillStyle = 'rgba(2,6,10,0.6)';
       ctx.fillRect(gameX, gameY, gridWidth, gridHeight);
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.font = `${28 * (gridWidth / 600)}px Inter, Arial`;
+      ctx.font = `${Math.min(28, gridWidth / 20)}px Inter, Arial`;
       ctx.textAlign = 'center';
       ctx.fillText('Game Over', gameX + gridWidth / 2, gameY + gridHeight * 0.42);
-      ctx.font = `${14 * (gridWidth / 600)}px Inter, Arial`;
+      ctx.font = `${Math.min(14, gridWidth / 40)}px Inter, Arial`;
       ctx.fillStyle = 'rgba(207,239,255,0.9)';
       ctx.fillText('Нажми Старт для новой игры', gameX + gridWidth / 2, gameY + gridHeight * 0.5);
       ctx.textAlign = 'start';
@@ -669,7 +655,7 @@ Features:
     }
   }
 
-  // Main loop with delta time
+  // Main loop
   let lastTS = performance.now();
   function loop(ts) {
     const dt = Math.min(0.1, (ts - lastTS) / 1000);
@@ -681,6 +667,6 @@ Features:
 
   // Initialize
   updateLayout();
-  render(); // Initial render to show empty grid
-  loop();
+  render();
+  requestAnimationFrame(loop);
 })();
