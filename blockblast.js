@@ -23,6 +23,7 @@ Features:
   let selectedPiece = null;
   let gameOver = false;
   let mouseX = 0, mouseY = 0, offsetX = 0, offsetY = 0, isDragging = false;
+  let pieceX = 0, pieceY = 0; // Store initial piece position for dragging
   const animations = [];
   const particles = [];
 
@@ -402,9 +403,11 @@ Features:
       const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
       const xOffset = (pieceWidth - maxC * pCell) / 2;
       const yOffset = index * pieceHeight + (pieceHeight - maxR * pCell) / 2;
-      offsetX = mouseX - (xOffset + (maxC * pCell) / 2);
-      offsetY = mouseY - (yOffset + (maxR * pCell) / 2);
-      console.log(`Selected piece ${index} at offset: ${offsetX}, ${offsetY}`);
+      pieceX = xOffset + (maxC * pCell) / 2;
+      pieceY = yOffset + (maxR * pCell) / 2;
+      offsetX = mouseX - pieceX;
+      offsetY = mouseY - pieceY;
+      console.log(`Desktop: Selected piece ${index} at position: ${pieceX}, ${pieceY}, offset: ${offsetX}, ${offsetY}`);
     } else {
       if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
@@ -418,9 +421,11 @@ Features:
       const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
       const xOffset = index * pieceWidth + (pieceWidth - maxC * pCell) / 2;
       const yOffset = bottomY + (pieceHeight - maxR * pCell) / 2;
-      offsetX = mouseX - (xOffset + (maxC * pCell) / 2);
-      offsetY = mouseY - (yOffset + (maxR * pCell) / 2);
-      console.log(`Selected piece ${index} at offset: ${offsetX}, ${offsetY}`);
+      pieceX = xOffset + (maxC * pCell) / 2;
+      pieceY = yOffset + (maxR * pCell) / 2;
+      offsetX = mouseX - pieceX;
+      offsetY = mouseY - pieceY;
+      console.log(`Mobile: Selected piece ${index} at position: ${pieceX}, ${pieceY}, offset: ${offsetX}, ${offsetY}`);
     }
   }
 
