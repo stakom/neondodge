@@ -2,12 +2,12 @@
 Block Blast
 Features:
 - 8x8 grid to place tetromino-like blocks
-- 3 selectable blocks at the left (desktop) or top (mobile), drag or click to place (mouse/touch)
+- 3 selectable blocks at the left (desktop) or bottom (mobile), drag or click to place (mouse/touch)
 - Clear full rows/columns to score points (10 per cell placed, 100 per line cleared, bonus for multiple lines)
 - Game over when no valid moves remain for any of the 3 blocks
 - Persistent high score (localStorage)
 - Neon visuals with animations (scale in on placement, explode and fade on clear)
-- Web Audio sound effects for placement, clear, and game over
+- Web Audio sound effects for placement, line destruction, clear, and game over
 - Smoother animations with easing
 */
 
@@ -81,6 +81,25 @@ Features:
     o.start();
     g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
     o.stop(audioCtx.currentTime + 0.25);
+  }
+
+  function playLineDestructionSound() {
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(880, audioCtx.currentTime);
+    g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    const filt = audioCtx.createBiquadFilter();
+    filt.type = 'bandpass';
+    filt.frequency.setValueAtTime(1200, audioCtx.currentTime);
+    o.connect(filt);
+    filt.connect(g);
+    g.connect(sfxGain);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+    o.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.25);
+    o.stop(audioCtx.currentTime + 0.3);
   }
 
   function playClearSound() {
@@ -191,6 +210,7 @@ Features:
     if (cleared > 0) {
       score += cleared * 100;
       if (cleared > 1) score += (cleared - 1) * 50;
+      playLineDestructionSound(); // Sound for line destruction
     }
     pieces.splice(selectedPiece.index, 1);
     generatePieces(); // Generate new set of 3 pieces
@@ -360,7 +380,7 @@ Features:
     placePiece();
   });
 
-  // Select a piece from the left (desktop) or top (mobile) area
+  // Select a piece from the left (desktop) or bottom (mobile) area
   function selectPiece() {
     if (window.innerWidth > 820) {
       // Desktop: left area
@@ -377,10 +397,10 @@ Features:
       offsetX = mouseX - ((pieceWidth - maxC * pCell) / 2 + (maxC * pCell) / 2);
       offsetY = mouseY - (index * pieceHeight + (pieceHeight - maxR * pCell) / 2 + (maxR * pCell) / 2);
     } else {
-      // Mobile: top area
-      if (mouseY > topY) return;
+      // Mobile: bottom area
+      if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = topY / 1; // Full top area height
+      const pieceHeight = (H - bottomY) / 1; // Full bottom area height
       const index = Math.floor(mouseX / pieceWidth);
       if (index < 0 || index >= pieces.length) return;
       selectedPiece = { piece: pieces[index], index, row: 0, col: 0 };
@@ -420,16 +440,19 @@ Features:
       gameWidth = W * 0.75; // 75% of width for game grid
       topY = 0;
       gameHeight = H;
+      bottomY = 0; // Not used on desktop
     } else {
-      // Mobile layout
-      topY = H * 0.25; // 25% of height for piece selection
+      // Mobile layout: pieces at bottom
+      topY = 0;
       gameWidth = W;
-      gameHeight = H * 0.75; // 75% of height for game grid
+      gameHeight = H * 0.7; // 70% of height for game grid to ensure full visibility
       leftX = 0;
+      bottomY = H * 0.7; // 30% of height for piece selection at bottom
     }
   }
 
   // Rendering
+  let bottomY;
   function drawRoundedRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -442,7 +465,7 @@ Features:
 
   function render() {
     ctx.clearRect(0, 0, W, H); // Full clear to prevent overlap
-    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE); // Ensure 8x8 fits
+    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE); // Ensure square cells
     const padding = cellSize * 0.1;
     const gridWidth = cellSize * GRID_SIZE;
     const gridHeight = cellSize * GRID_SIZE;
@@ -451,7 +474,7 @@ Features:
     const gameX = leftX + (gameWidth - gridWidth) / 2;
     const gameY = topY + (gameHeight - gridHeight) / 2;
 
-    // Draw pieces area (left for desktop, top for mobile)
+    // Draw pieces area (left for desktop, bottom for mobile)
     if (window.innerWidth > 820) {
       // Desktop: left area
       ctx.save();
@@ -486,15 +509,15 @@ Features:
         ctx.restore();
       }
     } else {
-      // Mobile: top area
+      // Mobile: bottom area
       ctx.save();
       ctx.shadowBlur = 8;
       ctx.shadowColor = 'rgba(255,255,255,0.1)';
       ctx.fillStyle = 'rgba(0,0,0,0.15)';
-      ctx.fillRect(0, 0, W, topY);
+      ctx.fillRect(0, bottomY, W, H - bottomY);
       ctx.restore();
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = topY / 1; // Full top area height
+      const pieceHeight = (H - bottomY) / 1; // Full bottom area height
       for (let i = 0; i < pieces.length; i++) {
         const shape = pieces[i].shape;
         const hue = pieces[i].hue;
@@ -511,7 +534,7 @@ Features:
         for (let r = 0; r < maxR; r++) {
           for (let c = 0; c < shape[r].length; c++) {
             if (shape[r][c]) {
-              drawRoundedRect(xOffset + c * pCell + pPadding, yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
+              drawRoundedRect(xOffset + c * pCell + pPadding, bottomY + yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
               ctx.fill();
             }
           }
@@ -531,14 +554,14 @@ Features:
     ctx.lineWidth = 1.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
       const yPos = gameY + i * cellSize;
-      if (yPos <= gameY + gridHeight) { // Limit vertical lines
+      if (yPos < gameY + gridHeight) { // Limit vertical lines
         ctx.beginPath();
         ctx.moveTo(gameX + i * cellSize, gameY);
         ctx.lineTo(gameX + i * cellSize, gameY + gridHeight);
         ctx.stroke();
       }
       const xPos = gameX + i * cellSize;
-      if (xPos <= gameX + gridWidth) { // Limit horizontal lines
+      if (xPos < gameX + gridWidth) { // Limit horizontal lines
         ctx.beginPath();
         ctx.moveTo(gameX, gameY + i * cellSize);
         ctx.lineTo(gameX + gridWidth, gameY + i * cellSize);
@@ -608,7 +631,7 @@ Features:
         ctx.globalAlpha = anim.alpha * (1 - easedProgress);
         ctx.shadowBlur = 16 * easedProgress;
         ctx.shadowColor = `hsl(${anim.hue} 90% 60% / ${1 - easedProgress})`;
-        ctx.fillStyle = `hsl(${anim.hue} 90% 60%)`;
+        ctx.fillStyle = `hsl${anim.hue} 90% 60%)`;
         drawRoundedRect(gameX + anim.c * cellSize + padding, gameY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * (1 - easedProgress));
         ctx.fill();
       }
