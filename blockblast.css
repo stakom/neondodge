@@ -50,8 +50,8 @@ header {
   font-weight: 900;
   color: #fff;
   text-decoration: none;
-  text-shadow: 0 6px 24px rgba(255,111,97,0.08);
-  background: linear-gradient(135deg, var(--neon1), var(--neon2));
+  text-shadow: 0 6px 24px rgba(0,246,255,0.08);
+  background: linear-gradient(135deg, #00f6ff, #ff00d4);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
