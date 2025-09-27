@@ -7,7 +7,7 @@ Features:
 - Game over when no valid moves remain for any of the 3 blocks
 - Persistent high score (localStorage)
 - Neon visuals with animations (scale in on placement, explode and fade on clear)
-- Web Audio sound effects for placement, line destruction, and game over
+- Web Audio sound effects for placement, line destruction, clear, and game over
 - Smoother animations with easing
 */
 
@@ -210,7 +210,7 @@ Features:
     if (cleared > 0) {
       score += cleared * 100;
       if (cleared > 1) score += (cleared - 1) * 50;
-      playLineDestructionSound(); // New sound for line destruction
+      playLineDestructionSound(); // Sound for line destruction
     }
     pieces.splice(selectedPiece.index, 1);
     generatePieces(); // Generate new set of 3 pieces
@@ -380,7 +380,7 @@ Features:
     placePiece();
   });
 
-  // Select a piece from the left (desktop) or top (mobile) area
+  // Select a piece from the left (desktop) or bottom (mobile) area
   function selectPiece() {
     if (window.innerWidth > 820) {
       // Desktop: left area
@@ -397,10 +397,10 @@ Features:
       offsetX = mouseX - ((pieceWidth - maxC * pCell) / 2 + (maxC * pCell) / 2);
       offsetY = mouseY - (index * pieceHeight + (pieceHeight - maxR * pCell) / 2 + (maxR * pCell) / 2);
     } else {
-      // Mobile: top area
-      if (mouseY > topY) return;
+      // Mobile: bottom area
+      if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = topY / 1; // Full top area height
+      const pieceHeight = (H - bottomY) / 1; // Full bottom area height
       const index = Math.floor(mouseX / pieceWidth);
       if (index < 0 || index >= pieces.length) return;
       selectedPiece = { piece: pieces[index], index, row: 0, col: 0 };
@@ -440,13 +440,14 @@ Features:
       gameWidth = W * 0.75; // 75% of width for game grid
       topY = 0;
       gameHeight = H;
+      bottomY = 0; // Not used on desktop
     } else {
       // Mobile layout: pieces at bottom
       topY = 0;
       gameWidth = W;
-      gameHeight = H * 0.75; // 75% of height for game grid
+      gameHeight = H * 0.7; // 70% of height for game grid to ensure full visibility
       leftX = 0;
-      bottomY = H * 0.75; // 25% of height for piece selection at bottom
+      bottomY = H * 0.7; // 30% of height for piece selection at bottom
     }
   }
 
@@ -525,7 +526,7 @@ Features:
         const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
         const pPadding = pCell * 0.1;
         const xOffset = i * pieceWidth + (pieceWidth - maxC * pCell) / 2;
-        const yOffset = bottomY + (pieceHeight - maxR * pCell) / 2;
+        const yOffset = (pieceHeight - maxR * pCell) / 2;
         ctx.save();
         ctx.shadowBlur = 14;
         ctx.shadowColor = `hsl(${hue} 90% 60% / 0.8)`;
@@ -533,7 +534,7 @@ Features:
         for (let r = 0; r < maxR; r++) {
           for (let c = 0; c < shape[r].length; c++) {
             if (shape[r][c]) {
-              drawRoundedRect(xOffset + c * pCell + pPadding, yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
+              drawRoundedRect(xOffset + c * pCell + pPadding, bottomY + yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
               ctx.fill();
             }
           }
@@ -553,17 +554,17 @@ Features:
     ctx.lineWidth = 1.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
       const yPos = gameY + i * cellSize;
-      if (yPos < gameY + gridHeight) { // Strict check for vertical lines
+      if (yPos < gameY + gridHeight) { // Limit vertical lines
         ctx.beginPath();
         ctx.moveTo(gameX + i * cellSize, gameY);
-        ctx.lineTo(gameX + i * cellSize, gameY + gridHeight - 1); // Avoid bottom overflow
+        ctx.lineTo(gameX + i * cellSize, gameY + gridHeight);
         ctx.stroke();
       }
       const xPos = gameX + i * cellSize;
-      if (xPos < gameX + gridWidth) { // Strict check for horizontal lines
+      if (xPos < gameX + gridWidth) { // Limit horizontal lines
         ctx.beginPath();
         ctx.moveTo(gameX, gameY + i * cellSize);
-        ctx.lineTo(gameX + gridWidth - 1, gameY + i * cellSize); // Avoid right overflow
+        ctx.lineTo(gameX + gridWidth, gameY + i * cellSize);
         ctx.stroke();
       }
     }
@@ -630,7 +631,7 @@ Features:
         ctx.globalAlpha = anim.alpha * (1 - easedProgress);
         ctx.shadowBlur = 16 * easedProgress;
         ctx.shadowColor = `hsl(${anim.hue} 90% 60% / ${1 - easedProgress})`;
-        ctx.fillStyle = `hsl(${anim.hue} 90% 60%)`;
+        ctx.fillStyle = `hsl${anim.hue} 90% 60%)`;
         drawRoundedRect(gameX + anim.c * cellSize + padding, gameY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * (1 - easedProgress));
         ctx.fill();
       }
