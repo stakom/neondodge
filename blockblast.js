@@ -442,8 +442,14 @@ Features:
 
   function render() {
     ctx.clearRect(0, 0, W, H); // Full clear to prevent overlap
-    const cellSize = gameWidth / GRID_SIZE;
+    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE); // Ensure 8x8 fits
     const padding = cellSize * 0.1;
+    const gridWidth = cellSize * GRID_SIZE;
+    const gridHeight = cellSize * GRID_SIZE;
+
+    // Adjust game area to fit 8x8 grid
+    const gameX = leftX + (gameWidth - gridWidth) / 2;
+    const gameY = topY + (gameHeight - gridHeight) / 2;
 
     // Draw pieces area (left for desktop, top for mobile)
     if (window.innerWidth > 820) {
@@ -519,23 +525,23 @@ Features:
     ctx.shadowBlur = 8;
     ctx.shadowColor = 'rgba(255,255,255,0.1)';
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    ctx.fillRect(leftX, topY, gameWidth, gameHeight); // Game grid area
+    ctx.fillRect(gameX, gameY, gridWidth, gridHeight); // Game grid area
     ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
-      const yPos = topY + i * cellSize;
-      if (yPos <= topY + gameHeight) { // Limit vertical lines
+      const yPos = gameY + i * cellSize;
+      if (yPos <= gameY + gridHeight) { // Limit vertical lines
         ctx.beginPath();
-        ctx.moveTo(leftX + i * cellSize, topY);
-        ctx.lineTo(leftX + i * cellSize, topY + gameHeight);
+        ctx.moveTo(gameX + i * cellSize, gameY);
+        ctx.lineTo(gameX + i * cellSize, gameY + gridHeight);
         ctx.stroke();
       }
-      const xPos = leftX + i * cellSize;
-      if (xPos <= leftX + gameWidth) { // Limit horizontal lines
+      const xPos = gameX + i * cellSize;
+      if (xPos <= gameX + gridWidth) { // Limit horizontal lines
         ctx.beginPath();
-        ctx.moveTo(leftX, topY + i * cellSize);
-        ctx.lineTo(leftX + gameWidth, topY + i * cellSize);
+        ctx.moveTo(gameX, gameY + i * cellSize);
+        ctx.lineTo(gameX + gridWidth, gameY + i * cellSize);
         ctx.stroke();
       }
     }
@@ -548,7 +554,7 @@ Features:
           ctx.shadowBlur = 16;
           ctx.shadowColor = `hsl(${grid[r][c]} 90% 60% / 0.8)`;
           ctx.fillStyle = `hsl(${grid[r][c]} 90% 60%)`;
-          drawRoundedRect(leftX + c * cellSize + padding, topY + r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * 1.2);
+          drawRoundedRect(gameX + c * cellSize + padding, gameY + r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * 1.2);
           ctx.fill();
           ctx.restore();
         }
@@ -564,8 +570,8 @@ Features:
       const pPadding = padding;
       const x = mouseX - offsetX;
       const y = mouseY - offsetY;
-      selectedPiece.row = Math.round((y - maxR * pCell / 2 - topY) / cellSize);
-      selectedPiece.col = Math.round((x - maxC * pCell / 2 - leftX) / cellSize);
+      selectedPiece.row = Math.round((y - maxR * pCell / 2 - gameY) / cellSize);
+      selectedPiece.col = Math.round((x - maxC * pCell / 2 - gameX) / cellSize);
       const canPlaceHere = canPlace(shape, selectedPiece.row, selectedPiece.col);
       ctx.save();
       ctx.globalAlpha = canPlaceHere ? 0.8 : 0.3;
@@ -590,34 +596,36 @@ Features:
       const easedProgress = easeInOutQuad(progress);
       if (anim.type === 'placement') {
         const scale = anim.scale * (1 - easedProgress) + easedProgress;
-        ctx.translate(leftX + (anim.c + 0.5) * cellSize, topY + (anim.r + 0.5) * cellSize);
+        ctx.translate(gameX + (anim.c + 0.5) * cellSize, gameY + (anim.r + 0.5) * cellSize);
         ctx.scale(scale, scale);
-        ctx.translate(-leftX - (anim.c + 0.5) * cellSize, -topY - (anim.r + 0.5) * cellSize);
+        ctx.translate(-gameX - (anim.c + 0.5) * cellSize, -gameY - (anim.r + 0.5) * cellSize);
         ctx.shadowBlur = 16 * (1 - easedProgress);
         ctx.shadowColor = `hsl(${anim.hue} 90% 60% / ${1 - easedProgress})`;
         ctx.fillStyle = `hsl(${anim.hue} 90% 60%)`;
-        drawRoundedRect(leftX + anim.c * cellSize + padding, topY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding);
+        drawRoundedRect(gameX + anim.c * cellSize + padding, gameY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding);
         ctx.fill();
       } else if (anim.type === 'clear') {
         ctx.globalAlpha = anim.alpha * (1 - easedProgress);
         ctx.shadowBlur = 16 * easedProgress;
         ctx.shadowColor = `hsl(${anim.hue} 90% 60% / ${1 - easedProgress})`;
         ctx.fillStyle = `hsl(${anim.hue} 90% 60%)`;
-        drawRoundedRect(leftX + anim.c * cellSize + padding, topY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * (1 - easedProgress));
+        drawRoundedRect(gameX + anim.c * cellSize + padding, gameY + anim.r * cellSize + padding, cellSize - 2 * padding, cellSize - 2 * padding, padding * (1 - easedProgress));
         ctx.fill();
       }
       ctx.restore();
     });
 
-    // Draw particles
+    // Draw particles with boundary check
     particles.forEach(pa => {
       ctx.save();
       const progress = pa.age / pa.life;
       ctx.globalAlpha = 1 - easeInOutQuad(progress);
       ctx.fillStyle = pa.color;
-      ctx.beginPath();
-      ctx.arc(pa.x, pa.y, pa.size * (1 - progress), 0, Math.PI * 2);
-      ctx.fill();
+      if (pa.x >= gameX && pa.x <= gameX + gridWidth && pa.y >= gameY && pa.y <= gameY + gridHeight) {
+        ctx.beginPath();
+        ctx.arc(pa.x, pa.y, pa.size * (1 - progress), 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     });
 
@@ -625,14 +633,14 @@ Features:
     if (gameOver) {
       ctx.save();
       ctx.fillStyle = 'rgba(2,6,10,0.6)';
-      ctx.fillRect(leftX, topY, gameWidth, gameHeight);
+      ctx.fillRect(gameX, gameY, gridWidth, gridHeight);
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.font = `${28 * (gameWidth / 600)}px Inter, Arial`;
+      ctx.font = `${28 * (gridWidth / 600)}px Inter, Arial`;
       ctx.textAlign = 'center';
-      ctx.fillText('Game Over', leftX + gameWidth / 2, topY + gameHeight * 0.42);
-      ctx.font = `${14 * (gameWidth / 600)}px Inter, Arial`;
+      ctx.fillText('Game Over', gameX + gridWidth / 2, gameY + gridHeight * 0.42);
+      ctx.font = `${14 * (gridWidth / 600)}px Inter, Arial`;
       ctx.fillStyle = 'rgba(207,239,255,0.9)';
-      ctx.fillText('Нажми Старт для новой игры', leftX + gameWidth / 2, topY + gameHeight * 0.5);
+      ctx.fillText('Нажми Старт для новой игры', gameX + gridWidth / 2, gameY + gridHeight * 0.5);
       ctx.textAlign = 'start';
       ctx.restore();
     }
