@@ -66,17 +66,22 @@ Features:
   let sfxGain;
   function initializeAudioContext() {
     if (!audioCtx) {
-      audioCtx = AudioContext ? new AudioContext() : null;
-      if (audioCtx) {
-        sfxGain = audioCtx.createGain();
-        sfxGain.gain.value = 0.6;
-        sfxGain.connect(audioCtx.destination);
+      try {
+        audioCtx = AudioContext ? new AudioContext() : null;
+        if (audioCtx) {
+          sfxGain = audioCtx.createGain();
+          sfxGain.gain.value = 0.6;
+          sfxGain.connect(audioCtx.destination);
+          console.log('AudioContext initialized successfully');
+        }
+      } catch (e) {
+        console.warn('Failed to initialize AudioContext:', e);
       }
     }
   }
 
   function playPlacementSound() {
-    if (!audioCtx) return;
+    if (!audioCtx || audioCtx.state === 'suspended') return;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'triangle';
@@ -90,7 +95,7 @@ Features:
   }
 
   function playLineDestructionSound() {
-    if (!audioCtx) return;
+    if (!audioCtx || audioCtx.state === 'suspended') return;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'sine';
@@ -109,7 +114,7 @@ Features:
   }
 
   function playClearSound() {
-    if (!audioCtx) return;
+    if (!audioCtx || audioCtx.state === 'suspended') return;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'sawtooth';
@@ -127,7 +132,7 @@ Features:
   }
 
   function playGameOverSound() {
-    if (!audioCtx) return;
+    if (!audioCtx || audioCtx.state === 'suspended') return;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'sine';
@@ -431,7 +436,12 @@ Features:
 
   // UI buttons
   function startGame() {
-    console.log('Start button pressed (click or touch)');
+    console.log('Start button triggered');
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().then(() => {
+        console.log('AudioContext resumed');
+      }).catch(e => console.warn('Failed to resume AudioContext:', e));
+    }
     initializeAudioContext();
     grid.forEach(row => row.fill(0));
     score = 0;
@@ -442,12 +452,15 @@ Features:
     render();
   }
 
-  btnStart.addEventListener('click', startGame);
-  btnStart.addEventListener('touchstart', e => {
+  // Unified event handler for start button
+  function handleStartButton(e) {
     e.preventDefault();
-    console.log('Start button touched');
+    console.log(`Start button event: ${e.type}`);
     startGame();
-  });
+  }
+
+  btnStart.addEventListener('click', handleStartButton);
+  btnStart.addEventListener('touchstart', handleStartButton);
 
   btnBack.addEventListener('click', () => {
     console.log('Back button pressed');

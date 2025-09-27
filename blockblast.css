@@ -16,7 +16,6 @@ html, body {
   margin: 0;
   font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
   overflow: hidden;
-  touch-action: none;
 }
 
 body {
