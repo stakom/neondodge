@@ -16,8 +16,8 @@
 
 html, body {
     height: 100%;
-    overflow: hidden;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
 }
 
 body {
@@ -27,6 +27,8 @@ body {
     flex-direction: column;
     padding: 12px;
     touch-action: manipulation;
+    overflow: auto; /* Разрешаем прокрутку */
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
 }
 
 .container {
@@ -35,6 +37,7 @@ body {
     flex-direction: column;
     gap: 12px;
     max-width: 100%;
+    min-height: min-content; /* Минимальная высота по содержимому */
 }
 
 /* Header */
@@ -42,7 +45,8 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
-    min-height: 60px; /* Фиксированная высота заголовка */
+    min-height: 60px;
+    flex-shrink: 0;
 }
 
 .brand {
@@ -77,7 +81,7 @@ header {
 }
 
 .header-text {
-    min-width: 0; /* Предотвращает растягивание */
+    min-width: 0;
 }
 
 .header-text h1 {
@@ -97,27 +101,27 @@ header {
     text-overflow: ellipsis;
 }
 
-/* Game Area - ФИКСИРОВАННЫЕ РАЗМЕРЫ */
+/* Game Area */
 .game-area {
-    flex: 1;
     background: rgba(255,255,255,0.02);
     border-radius: 16px;
     padding: 20px;
     border: 1px solid rgba(255,255,255,0.05);
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Фиксированная минимальная высота */
-    max-height: 500px; /* Фиксированная максимальная высота */
+    min-height: 400px;
+    max-height: 500px;
+    flex-shrink: 0;
 }
 
 .lights-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    width: min(300px, 80vw); /* Фиксированная ширина */
-    height: min(300px, 80vw); /* Фиксированная высота = ширина */
+    width: min(300px, 80vw);
+    height: min(300px, 80vw);
     margin: 0 auto;
-    flex-shrink: 0; /* Не сжимается */
+    flex-shrink: 0;
 }
 
 .light {
@@ -169,12 +173,12 @@ header {
     pointer-events: none;
 }
 
-/* Game Status - ФИКСИРОВАННАЯ ВЫСОТА */
+/* Game Status */
 .game-status {
     text-align: center;
-    margin-top: auto; /* Прижимаем к низу */
+    margin-top: auto;
     padding-top: 20px;
-    min-height: 80px; /* Фиксированная высота */
+    min-height: 80px;
     flex-shrink: 0;
 }
 
@@ -203,11 +207,15 @@ header {
     padding: 16px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.05);
-    flex-shrink: 0; /* Не сжимается */
+    flex-shrink: 0;
 }
 
 .panel-section {
     margin-bottom: 20px;
+}
+
+.panel-section:last-child {
+    margin-bottom: 0;
 }
 
 .panel-section h2 {
@@ -244,6 +252,21 @@ header {
 
 .btn:active {
     transform: scale(0.95);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: var(--muted) !important;
 }
 
 /* Score Display */
@@ -288,6 +311,10 @@ footer a {
 
 /* Desktop Styles */
 @media (min-width: 768px) {
+    body {
+        overflow: hidden; /* На десктопе прокрутка не нужна */
+    }
+    
     .container {
         display: grid;
         grid-template-columns: 1fr 300px;
@@ -317,6 +344,8 @@ footer a {
         position: sticky;
         top: 16px;
         height: fit-content;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 
     footer {
@@ -336,9 +365,17 @@ footer a {
 }
 
 /* Mobile Optimization */
-@media (max-width: 480px) {
+@media (max-width: 767px) {
     body {
         padding: 8px;
+        overflow: auto; /* Разрешаем прокрутку на мобильных */
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .container {
+        min-height: 100vh;
+        gap: 16px;
     }
 
     .game-area {
@@ -381,6 +418,10 @@ footer a {
     .header-text h1 {
         font-size: 18px;
     }
+
+    .ui-panel {
+        margin-bottom: 20px;
+    }
 }
 
 /* Very small screens */
@@ -407,5 +448,9 @@ footer a {
 
     .status-text {
         font-size: 15px;
+    }
+
+    .instructions {
+        font-size: 12px;
     }
 }
