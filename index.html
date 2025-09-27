@@ -3,82 +3,30 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Neon Arena — Ultimate Edition</title>
-  <link rel="stylesheet" href="neon.css"/>
+  <title>Stakom Games</title>
+  <link rel="stylesheet" href="menu.css"/>
 </head>
 <body>
-<div class="shell">
-  <header>
-    <div class="brand">
-      <div class="logo">NA</div>
-      <div>
-        <h1>Neon Arena — Ultimate</h1>
-        <div class="subtitle">Двухпользовательская неоновая аркада с эффектным звуком и визуалами</div>
-      </div>
+  <div class="shell">
+    <header>
+      <a href="index.html" class="logo">Stakom</a>
+    </header>
+    <h1>Выберите игру</h1>
+    <div class="game-list">
+      <a href="neon.html" class="game-card">
+        <div class="game-icon neon-icon"></div>
+        <h2>Neon Arena — Ultimate</h2>
+        <p>Двухпользовательская аркада с неоновыми визуалами и кибер-рок звуком</p>
+      </a>
+      <a href="blockblast.html" class="game-card">
+        <div class="game-icon blockblast-icon"></div>
+        <h2>Block Blast</h2>
+        <p>Простая головоломка: размещайте блоки, очищайте линии</p>
+      </a>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:12px;color:var(--muted)">Управление</div>
-      <div style="font-weight:700;color:white">P1: <span class="kbd">A/Ф</span>/<span class="kbd">D/В</span>/<span class="kbd">W/Ц</span>/<span class="kbd">S/Ы</span> &nbsp; P2: <span class="kbd">←</span>/<span class="kbd">→</span>/<span class="kbd">↑</span>/<span class="kbd">↓</span></div>
-    </div>
-  </header>
-
-  <div class="card">
-    <canvas id="canvas" width="800" height="600"></canvas>
+    <footer>
+      <p>Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году</p>
+    </footer>
   </div>
-
-  <aside class="ui">
-    <div class="panel">
-      <h2>Меню</h2>
-      <div class="muted">Выберите режим и настройте звук</div>
-      <div class="controls">
-        <button id="btnStart" class="btn primary">▶ Старт</button>
-        <button id="btnRestart" class="btn">⤴ Рестарт</button>
-        <button id="btnPause" class="btn">⏸ Пауза</button>
-        <button id="btnMode" class="btn">Режим: <span id="modeLabel">Survival</span></button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Счёт</h2>
-      <div class="score-row"><div>Игрок 1</div><div class="score-big" id="score1">0</div></div>
-      <div class="score-row"><div>Игрок 2</div><div class="score-big" id="score2">0</div></div>
-      <div class="score-row"><div>Рекорд P1</div><div id="best1">0</div></div>
-      <div class="score-row"><div>Рекорд P2</div><div id="best2">0</div></div>
-    </div>
-
-    <div class="panel">
-      <h2>Звук</h2>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="muteBtn" class="btn">🔊 Вкл</button>
-        <button id="sfxBtn" class="btn">SFX: Вкл</button>
-      </div>
-      <div class="muted" style="margin-top:10px">Музыка — кибер-рок с дисторшн-риффами. Звук включается по первому клику (ограничение браузера).</div>
-    </div>
-
-    <div class="panel">
-      <h2>Подсказки</h2>
-      <div class="muted">Собирать усилители — щит и ускорение. В режиме Duel побеждает последняя выжившая точка.</div>
-    </div>
-  </aside>
-
-  <footer>
-    <p>Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году</p>
-  </footer>
-</div>
-
-<!-- Menu overlay -->
-<div id="menuOverlay">
-  <div class="menuCard">
-    <div class="menuTitle">Neon Arena — Ultimate</div>
-    <div class="muted">Выбери режим игры</div>
-    <div class="menuBtns" style="margin-top:18px">
-      <button id="menuSingle" class="menuBtn primary">Игра на одного</button>
-      <button id="menuDual" class="menuBtn">Игра на двоих</button>
-    </div>
-    <div style="margin-top:18px;color:var(--muted)">Нажимай клавиши A/Ф/D/В/W/Ц/S/Ы и ←/→/↑/↓. Кликни для включения звука.</div>
-  </div>
-</div>
-
-<script src="neon.js"></script>
 </body>
 </html>

@@ -4,13 +4,12 @@ Features:
 - main menu (single / dual)
 - perspective neon grid background + particles
 - two players with neon glow and vertical movement
-- obstacles: blocks, bars, lasers (telegraphed)
-- pickups: shield & speed
+- obstacles: blocks, bars, lasers (even slower movement/appearance)
 - particle effects & explosions
-- WebAudio: new cyber-rock loop with distortion + new SFX
+- WebAudio: cyber-rock loop with distortion + SFX
 - persistent best scores (localStorage)
-- corrected collision for both players
 - Russian keyboard layout support for Player 1
+- Mobile touch controls
 */
 
 (() => {
@@ -45,6 +44,8 @@ Features:
   const score2El = document.getElementById('score2');
   const best1El = document.getElementById('best1');
   const best2El = document.getElementById('best2');
+  const p1Controls = document.getElementById('p1Controls');
+  const p2Controls = document.getElementById('p2Controls');
 
   // Audio setup
   const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -61,7 +62,7 @@ Features:
     distortionNode = audioCtx.createWaveShaper();
     distortionNode.curve = new Float32Array(44100).map((_, i) => {
       const x = (i * 2) / 44100 - 1;
-      return Math.sign(x) * Math.pow(Math.abs(x), 0.5); // Soft clipping for distortion
+      return Math.sign(x) * Math.pow(Math.abs(x), 0.5);
     });
     distortionNode.oversample = '4x';
     musicGain.connect(distortionNode);
@@ -75,7 +76,7 @@ Features:
     if (audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  // New WebAudio sounds
+  // WebAudio sounds
   function playHit() {
     if (!audioCtx || !soundOn || !sfxOn) return;
     const o = audioCtx.createOscillator();
@@ -94,21 +95,6 @@ Features:
     g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
     o.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
     o.stop(audioCtx.currentTime + 0.25);
-  }
-
-  function playPickup() {
-    if (!audioCtx || !soundOn || !sfxOn) return;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(1600, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    o.connect(g);
-    g.connect(sfxGain);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
-    o.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
-    o.stop(audioCtx.currentTime + 0.18);
   }
 
   function playStart() {
@@ -226,7 +212,7 @@ Features:
 
   // Players
   function makePlayer(id, color, x) {
-    return { id, x, y: 0.82, w: 0.06, h: 0.045, vx: 0, vy: 0, speed: 0.7, color, alive: true, score: 0, shield: 0 };
+    return { id, x, y: 0.82, w: 0.06, h: 0.045, vx: 0, vy: 0, speed: 0.5, color, alive: true, score: 0, shield: 0 };
   }
   let p1 = makePlayer('p1', '#00e9ff', 0.26);
   let p2 = makePlayer('p2', '#ff2ab2', 0.74);
@@ -237,15 +223,33 @@ Features:
   p2.best = parseInt(localStorage.getItem('neon_best_p2') || '0', 10);
   best1El.textContent = p1.best; best2El.textContent = p2.best;
 
-  // Obstacles & pickups & particles
+  // Obstacles & particles
   const obstacles = [];
-  const pickups = [];
   const particles = [];
 
   // Input
   const keys = {};
-  window.addEventListener('keydown', e => { keys[e.key] = true; if (!running && (e.key === ' ')) startFromMenu(); });
+  window.addEventListener('keydown', e => { keys[e.key] = true; if (!running && e.key === ' ') startFromMenu(); });
   window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+  // Touch controls
+  const touchState = { p1: {}, p2: {} };
+  function setupTouchControls(playerId, controlsEl) {
+    const buttons = controlsEl.querySelectorAll('.touch-btn');
+    buttons.forEach(btn => {
+      const dir = btn.dataset.dir;
+      btn.addEventListener('touchstart', e => {
+        e.preventDefault();
+        touchState[playerId][dir] = true;
+      });
+      btn.addEventListener('touchend', e => {
+        e.preventDefault();
+        touchState[playerId][dir] = false;
+      });
+    });
+  }
+  if (p1Controls) setupTouchControls('p1', p1Controls);
+  if (p2Controls) setupTouchControls('p2', p2Controls);
 
   // UI buttons
   btnStart.addEventListener('click', () => { if (!running) startFromMenu(); else { paused = false; } });
@@ -280,7 +284,7 @@ Features:
       y: -0.12,
       w: rand(0.06, 0.14),
       h: rand(0.04, 0.08),
-      speed: 0.12 + difficulty * 0.03,
+      speed: 0.04 + difficulty * 0.01,
       vx: rand(-0.02, 0.02),
       hue: rand(0, 360)
     });
@@ -293,7 +297,7 @@ Features:
       y: -0.12,
       w: wide,
       h: 0.05,
-      speed: 0.10 + difficulty * 0.02,
+      speed: 0.04 + difficulty * 0.01,
       vx: rand(-0.3, 0.3),
       hue: rand(0, 360)
     });
@@ -305,22 +309,11 @@ Features:
       y: rand(0.18, 0.75),
       state: 'warn',
       timer: 0,
-      warnDur: 0.85 - Math.min(0.45, difficulty * 0.03),
-      fireDur: 0.5 + difficulty * 0.02,
+      warnDur: 1.8 - Math.min(0.8, difficulty * 0.015),
+      fireDur: 1.2 + difficulty * 0.01,
       hue: rand(0, 360)
     });
     playLaserWarn();
-  }
-  function spawnPickup() {
-    pickups.push({
-      type: Math.random() < 0.65 ? 'speed' : 'shield',
-      x: rand(0.08, 0.92),
-      y: -0.08,
-      w: 0.05,
-      h: 0.05,
-      speed: 0.08,
-      hue: Math.random() * 360
-    });
   }
 
   // Particles
@@ -338,7 +331,7 @@ Features:
     }
   }
 
-  // Explosion effect when player dies
+  // Explosion effect
   function explodeAt(px, py, color) {
     spawnParticles(px, py, color, 26, 2.6);
     playHit();
@@ -347,7 +340,6 @@ Features:
   // Game lifecycle
   function resetGame(full = false) {
     obstacles.length = 0;
-    pickups.length = 0;
     particles.length = 0;
     difficulty = 0;
     spawnTimer = 0;
@@ -415,8 +407,7 @@ Features:
         else if (r < 0.6) spawnBar();
         else spawnLaser();
       }
-      if (Math.random() < 0.12) spawnPickup();
-      spawnTimer = rand(0.32, 0.9) - Math.min(0.3, difficulty * 0.03);
+      spawnTimer = rand(0.5, 1.2) - Math.min(0.4, difficulty * 0.02);
     }
 
     // Handle input and movement
@@ -424,15 +415,15 @@ Features:
       if (!pl.alive) return;
       let moveX = 0, moveY = 0;
       if (pl.id === 'p1') {
-        moveX += (keys['a'] || keys['ф'] || keys['A'] || keys['Ф']) ? -1 : 0;
-        moveX += (keys['d'] || keys['в'] || keys['D'] || keys['В']) ? 1 : 0;
-        moveY += (keys['w'] || keys['ц'] || keys['W'] || keys['Ц']) ? -1 : 0;
-        moveY += (keys['s'] || keys['ы'] || keys['S'] || keys['Ы']) ? 1 : 0;
+        moveX += (keys['a'] || keys['ф'] || keys['A'] || keys['Ф'] || touchState.p1.left) ? -1 : 0;
+        moveX += (keys['d'] || keys['в'] || keys['D'] || keys['В'] || touchState.p1.right) ? 1 : 0;
+        moveY += (keys['w'] || keys['ц'] || keys['W'] || keys['Ц'] || touchState.p1.up) ? -1 : 0;
+        moveY += (keys['s'] || keys['ы'] || keys['S'] || keys['Ы'] || touchState.p1.down) ? 1 : 0;
       } else {
-        moveX += (keys['ArrowLeft']) ? -1 : 0;
-        moveX += (keys['ArrowRight']) ? 1 : 0;
-        moveY += (keys['ArrowUp']) ? -1 : 0;
-        moveY += (keys['ArrowDown']) ? 1 : 0;
+        moveX += (keys['ArrowLeft'] || touchState.p2.left) ? -1 : 0;
+        moveX += (keys['ArrowRight'] || touchState.p2.right) ? 1 : 0;
+        moveY += (keys['ArrowUp'] || touchState.p2.up) ? -1 : 0;
+        moveY += (keys['ArrowDown'] || touchState.p2.down) ? 1 : 0;
       }
       const targetVx = moveX * pl.speed;
       const targetVy = moveY * pl.speed;
@@ -462,23 +453,6 @@ Features:
       }
     }
 
-    // Pickups
-    for (let i = pickups.length - 1; i >= 0; i--) {
-      const pk = pickups[i];
-      pk.y += pk.speed * dt * (1 + difficulty * 0.06);
-      if (pk.y > 1.2) { pickups.splice(i, 1); continue; }
-      players.forEach(pl => {
-        if (!pl.alive) return;
-        const pr = { x: pl.x - pl.w / 2, y: pl.y - pl.h / 2, w: pl.w, h: pl.h };
-        const kr = { x: pk.x - pk.w / 2, y: pk.y - pk.h / 2, w: pk.w, h: pk.h };
-        if (rectOverlap(pr, kr)) {
-          if (pk.type === 'speed') { pl.speed *= 1.28; setTimeout(() => pl.speed /= 1.28, 4800); playPickup(); }
-          else if (pk.type === 'shield') { pl.shield = 1; setTimeout(() => pl.shield = 0, 4800); playPickup(); }
-          pickups.splice(i, 1);
-        }
-      });
-    }
-
     // Particles
     for (let i = particles.length - 1; i >= 0; i--) {
       const pa = particles[i];
@@ -489,7 +463,7 @@ Features:
       if (pa.age >= pa.life) particles.splice(i, 1);
     }
 
-    // Collisions (players vs obstacles)
+    // Collisions
     players.forEach(pl => {
       if (!pl.alive) return;
       const pr = { x: pl.x - pl.w / 2, y: pl.y - pl.h / 2, w: pl.w, h: pl.h };
@@ -498,14 +472,14 @@ Features:
           if (o.state === 'fire') {
             const lr = { x: 0, y: o.y - 0.01, w: 1, h: 0.02 };
             if (rectOverlap(pr, lr)) {
-              if (pl.shield) { pl.shield = 0; playPickup(); }
+              if (pl.shield) { pl.shield = 0; }
               else { pl.alive = false; explodeAt(pl.x * W, pl.y * H, pl.color); }
             }
           }
         } else {
           const or = { x: o.x - o.w / 2, y: o.y - o.h / 2, w: o.w, h: o.h };
           if (rectOverlap(pr, or)) {
-            if (pl.shield) { pl.shield = 0; playPickup(); }
+            if (pl.shield) { pl.shield = 0; }
             else { pl.alive = false; explodeAt(pl.x * W, pl.y * H, pl.color); }
           }
         }
@@ -522,7 +496,7 @@ Features:
   }
 
   // Rendering
-  function renderBackground(ts) {
+  function renderBackground() {
     ctx.clearRect(0, 0, W, H);
     const vg = ctx.createLinearGradient(0, 0, 0, H);
     vg.addColorStop(0, 'rgba(255,255,255,0.01)');
@@ -567,20 +541,6 @@ Features:
 
   function renderScene() {
     renderBackground();
-
-    pickups.forEach(pk => {
-      const rx = pk.x * W, ry = pk.y * H, rw = pk.w * W, rh = pk.h * H;
-      ctx.save();
-      ctx.shadowBlur = 18;
-      ctx.shadowColor = `hsl(${pk.hue} 90% 60% / 0.85)`;
-      ctx.fillStyle = `hsl(${pk.hue} 90% 60%)`;
-      drawRoundedRect(rx - rw / 2, ry - rh / 2, rw, rh, Math.min(12, rh / 2));
-      ctx.fill();
-      ctx.restore();
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.font = `${10 * (W / 800)}px monospace`;
-      ctx.fillText(pk.type === 'speed' ? '⚡' : '⬢', rx - 6, ry + 6);
-    });
 
     obstacles.forEach(o => {
       if (o.type === 'block' || o.type === 'bar') {
@@ -691,42 +651,39 @@ Features:
     requestAnimationFrame(loop);
   }
 
-  // Helper: explosion trigger with screen-space coordinates
+  // Helper: explosion trigger
   function explodeAt(sx, sy, color) {
     spawnParticles(sx, sy, color, 28, 2.8);
     playHit();
   }
 
-  // Initial menu visible; hook menu buttons
+  // Initial menu visible
   menuOverlay.style.display = 'flex';
   document.body.addEventListener('pointerdown', () => { ensureAudioResume(); }, { once: true });
 
-  // Initialize selected mode toggles on top menu
+  // Initialize mode toggles
   menuSingle.addEventListener('click', () => { selectedMode = 'single'; });
   menuDual.addEventListener('click', () => { selectedMode = 'dual'; });
 
-  // Ensure menu clicks start appropriate mode
   menuSingle.onclick = () => { selectedMode = 'single'; startFromMenu(); };
   menuDual.onclick = () => { selectedMode = 'dual'; startFromMenu(); };
 
-  // Small helper to random test spawns in console: window._neon.spawnBlock()
+  // Debug helpers
   window._neon = {
     spawnBlock: spawnBlock,
     spawnBar: spawnBar,
     spawnLaser: spawnLaser,
-    spawnPickup: spawnPickup,
     players: players,
     obstacles: obstacles
   };
 
-  // Expose start/stop
   window._neon.start = () => startGame(true);
   window._neon.end = () => endGame();
 
-  // Done - render initial
+  // Render initial
   renderScene();
 
-  // Small convenience: keyboard to bring back menu (M)
+  // Menu shortcut (M)
   window.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'm') { menuOverlay.style.display = 'flex'; running = false; stopMusic(); }
     if (e.key === ' ' && menuOverlay.style.display === 'flex') { startFromMenu(); }
