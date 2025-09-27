@@ -37,8 +37,8 @@ Features:
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(400, Math.floor(rect.width * DPR));
-    canvas.height = Math.max(400, Math.floor(rect.height * DPR));
+    canvas.width = Math.max(360, Math.floor(rect.width * DPR));
+    canvas.height = Math.max(360, Math.floor(rect.height * DPR));
     W = canvas.width;
     H = canvas.height;
     updateLayout();
@@ -62,12 +62,17 @@ Features:
 
   // Audio setup
   const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioCtx = AudioContext ? new AudioContext() : null;
+  let audioCtx = null;
   let sfxGain;
-  if (audioCtx) {
-    sfxGain = audioCtx.createGain();
-    sfxGain.gain.value = 0.6;
-    sfxGain.connect(audioCtx.destination);
+  function initializeAudioContext() {
+    if (!audioCtx) {
+      audioCtx = AudioContext ? new AudioContext() : null;
+      if (audioCtx) {
+        sfxGain = audioCtx.createGain();
+        sfxGain.gain.value = 0.6;
+        sfxGain.connect(audioCtx.destination);
+      }
+    }
   }
 
   function playPlacementSound() {
@@ -244,7 +249,7 @@ Features:
     });
     toClearCols.forEach(c => {
       for (let r = 0; r < GRID_SIZE; r++) {
-        if (!toClearRows.includes(r)) { // Avoid duplicating animations
+        if (!toClearRows.includes(r)) {
           animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
           spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, 5, 1.2);
         }
@@ -413,8 +418,9 @@ Features:
   }
 
   // UI buttons
-  btnStart.addEventListener('click', () => {
-    console.log('Start button clicked');
+  function startGame() {
+    console.log('Start button pressed (click or touch)');
+    initializeAudioContext(); // Activate audio context on user interaction
     grid.forEach(row => row.fill(0));
     score = 0;
     gameOver = false;
@@ -422,9 +428,22 @@ Features:
     generatePieces();
     updateScore();
     render();
+  }
+
+  btnStart.addEventListener('click', startGame);
+  btnStart.addEventListener('touchstart', e => {
+    e.preventDefault();
+    console.log('Start button touched');
+    startGame();
   });
 
   btnBack.addEventListener('click', () => {
+    console.log('Back button pressed');
+    window.location.href = 'index.html';
+  });
+  btnBack.addEventListener('touchstart', e => {
+    e.preventDefault();
+    console.log('Back button touched');
     window.location.href = 'index.html';
   });
 
@@ -442,9 +461,9 @@ Features:
     } else {
       topY = 0;
       gameWidth = W;
-      gameHeight = H * 0.75; // Increased for better visibility
+      gameHeight = H * 0.8; // Increased for better mobile visibility
       leftX = 0;
-      bottomY = H * 0.75;
+      bottomY = H * 0.8;
     }
   }
 
@@ -644,10 +663,10 @@ Features:
       ctx.fillStyle = 'rgba(2,6,10,0.6)';
       ctx.fillRect(gameX, gameY, gridWidth, gridHeight);
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.font = `${Math.min(28, gridWidth / 20)}px Inter, Arial`;
+      ctx.font = `${Math.min(28, gridWidth / 18)}px Inter, Arial`;
       ctx.textAlign = 'center';
       ctx.fillText('Game Over', gameX + gridWidth / 2, gameY + gridHeight * 0.42);
-      ctx.font = `${Math.min(14, gridWidth / 40)}px Inter, Arial`;
+      ctx.font = `${Math.min(14, gridWidth / 36)}px Inter, Arial`;
       ctx.fillStyle = 'rgba(207,239,255,0.9)';
       ctx.fillText('Нажми Старт для новой игры', gameX + gridWidth / 2, gameY + gridHeight * 0.5);
       ctx.textAlign = 'start';

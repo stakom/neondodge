@@ -12,7 +12,7 @@ html, body {
   margin: 0;
   font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
   overflow: hidden;
-  touch-action: none; /* Prevent scrolling/zooming */
+  touch-action: none;
 }
 
 body {
@@ -102,7 +102,7 @@ canvas {
   display: block;
   border-radius: 8px;
   background: transparent;
-  min-height: 360px; /* Adjusted for better mobile visibility */
+  min-height: 300px;
   position: relative;
   z-index: 1;
 }
@@ -113,7 +113,7 @@ canvas {
   gap: 10px;
   position: sticky;
   top: 12px;
-  z-index: 10;
+  z-index: 20; /* Increased to ensure buttons are clickable */
 }
 
 .panel {
@@ -149,6 +149,7 @@ canvas {
   color: var(--muted);
   cursor: pointer;
   transition: all .12s ease;
+  touch-action: manipulation; /* Ensure touch events work */
 }
 
 .btn.primary {
@@ -211,13 +212,13 @@ footer a:hover {
     font-size: 11px;
   }
   canvas {
-    min-height: 320px; /* Adjusted for smaller screens */
+    min-height: 280px;
   }
 }
 
 @media (max-width: 480px) {
   canvas {
-    min-height: 300px;
+    min-height: 260px;
   }
   h1 {
     font-size: 18px;
@@ -232,5 +233,9 @@ footer a:hover {
   }
   .score-big {
     font-size: 16px;
+  }
+  .btn {
+    padding: 6px 8px;
+    font-size: 14px;
   }
 }
