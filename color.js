@@ -123,6 +123,7 @@
         gameState.isShowingSequence = true;
         statusText.textContent = 'Запоминайте последовательность...';
         disableLights();
+        disableStartButton();
         
         for (const color of gameState.sequence) {
             await lightUp(color, 800);
@@ -205,6 +206,7 @@
         playErrorSound();
         statusText.textContent = `Игра окончена! Ваш счёт: ${gameState.currentScore}`;
         disableLights();
+        enableStartButton();
         
         // Clear any existing timeout
         if (gameState.gameTimeout) {
@@ -223,14 +225,10 @@
         }, 500);
         
         updateUI();
-        btnStart.textContent = '▶ Старт';
     }
 
     function startGame() {
-        if (gameState.isPlaying) {
-            pauseGame();
-            return;
-        }
+        if (gameState.isPlaying) return;
         
         gameState.isPlaying = true;
         gameState.currentLevel = 1;
@@ -241,15 +239,7 @@
         generateSequence();
         showSequence();
         
-        btnStart.textContent = '⏸ Пауза';
-        btnStart.classList.add('primary');
-    }
-
-    function pauseGame() {
-        gameState.isPlaying = false;
-        statusText.textContent = 'Игра на паузе';
-        disableLights();
-        btnStart.textContent = '▶ Продолжить';
+        disableStartButton();
     }
 
     function resetGame() {
@@ -272,9 +262,8 @@
         
         statusText.textContent = 'Нажмите СТАРТ для начала игры';
         disableLights();
+        enableStartButton();
         updateUI();
-        btnStart.textContent = '▶ Старт';
-        btnStart.classList.remove('primary');
     }
 
     function disableLights() {
@@ -287,6 +276,18 @@
         lights.forEach(light => {
             light.classList.remove('disabled');
         });
+    }
+
+    function disableStartButton() {
+        btnStart.disabled = true;
+        btnStart.classList.add('disabled');
+        btnStart.classList.remove('primary');
+    }
+
+    function enableStartButton() {
+        btnStart.disabled = false;
+        btnStart.classList.remove('disabled');
+        btnStart.classList.add('primary');
     }
 
     function updateUI() {
@@ -313,20 +314,16 @@
         });
     });
 
-    btnStart.addEventListener('click', () => {
-        if (gameState.isPlaying) {
-            pauseGame();
-        } else {
-            startGame();
-        }
-    });
+    btnStart.addEventListener('click', startGame);
 
     btnReset.addEventListener('click', resetGame);
 
     // Touch events for mobile
     btnStart.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        btnStart.click();
+        if (!btnStart.disabled) {
+            btnStart.click();
+        }
     });
 
     btnReset.addEventListener('touchstart', (e) => {
@@ -337,6 +334,7 @@
     // Initialize
     updateUI();
     disableLights();
+    enableStartButton();
 
     // Prevent zoom on double tap
     document.addEventListener('dblclick', (e) => {
