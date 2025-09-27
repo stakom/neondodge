@@ -244,14 +244,14 @@ Features:
     toClearRows.forEach(r => {
       for (let c = 0; c < GRID_SIZE; c++) {
         animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
-        spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, 5, 1.2);
+        spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, window.innerWidth > 820 ? 5 : 3, 1.2);
       }
     });
     toClearCols.forEach(c => {
       for (let r = 0; r < GRID_SIZE; r++) {
         if (!toClearRows.includes(r)) {
           animations.push({ type: 'clear', r, c, hue: grid[r][c], age: 0, life: 0.6, alpha: 1 });
-          spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, 5, 1.2);
+          spawnParticles((c + 0.5) * (gameWidth / GRID_SIZE) + leftX, (r + 0.5) * (gameHeight / GRID_SIZE) + topY, `hsl(${grid[r][c]} 90% 60%)`, window.innerWidth > 820 ? 5 : 3, 1.2);
         }
       }
     });
@@ -369,6 +369,7 @@ Features:
     const touch = e.touches[0];
     mouseX = (touch.clientX - rect.left) * (W / rect.width);
     mouseY = (touch.clientY - rect.top) * (H / rect.height);
+    console.log(`Touch start at: ${mouseX}, ${mouseY}`);
     selectPiece();
     isDragging = !!selectedPiece;
   });
@@ -399,8 +400,11 @@ Features:
       const maxC = Math.max(...shape.map(row => row.length));
       const maxR = shape.length;
       const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
-      offsetX = mouseX - ((pieceWidth - maxC * pCell) / 2 + (maxC * pCell) / 2);
-      offsetY = mouseY - (index * pieceHeight + (pieceHeight - maxR * pCell) / 2 + (maxR * pCell) / 2);
+      const xOffset = (pieceWidth - maxC * pCell) / 2;
+      const yOffset = index * pieceHeight + (pieceHeight - maxR * pCell) / 2;
+      offsetX = mouseX - (xOffset + (maxC * pCell) / 2);
+      offsetY = mouseY - (yOffset + (maxR * pCell) / 2);
+      console.log(`Selected piece ${index} at offset: ${offsetX}, ${offsetY}`);
     } else {
       if (mouseY < bottomY) return;
       const pieceWidth = gameWidth / 3;
@@ -412,15 +416,18 @@ Features:
       const maxC = Math.max(...shape.map(row => row.length));
       const maxR = shape.length;
       const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
-      offsetX = mouseX - (index * pieceWidth + (pieceWidth - maxC * pCell) / 2 + (maxC * pCell) / 2);
-      offsetY = mouseY - ((pieceHeight - maxR * pCell) / 2 + (maxR * pCell) / 2);
+      const xOffset = index * pieceWidth + (pieceWidth - maxC * pCell) / 2;
+      const yOffset = bottomY + (pieceHeight - maxR * pCell) / 2;
+      offsetX = mouseX - (xOffset + (maxC * pCell) / 2);
+      offsetY = mouseY - (yOffset + (maxR * pCell) / 2);
+      console.log(`Selected piece ${index} at offset: ${offsetX}, ${offsetY}`);
     }
   }
 
   // UI buttons
   function startGame() {
     console.log('Start button pressed (click or touch)');
-    initializeAudioContext(); // Activate audio context on user interaction
+    initializeAudioContext();
     grid.forEach(row => row.fill(0));
     score = 0;
     gameOver = false;
@@ -460,10 +467,10 @@ Features:
       bottomY = 0;
     } else {
       topY = 0;
-      gameWidth = W;
-      gameHeight = H * 0.8; // Increased for better mobile visibility
+      gameWidth = W; // Full width for game field
+      gameHeight = H * 0.75; // Adjusted for piece selection area
       leftX = 0;
-      bottomY = H * 0.8;
+      bottomY = H * 0.75;
     }
   }
 
@@ -484,7 +491,7 @@ Features:
     const padding = cellSize * 0.1;
     const gridWidth = cellSize * GRID_SIZE;
     const gridHeight = cellSize * GRID_SIZE;
-    const gameX = leftX + (gameWidth - gridWidth) / 2;
+    const gameX = leftX; // No centering, full width
     const gameY = topY + (gameHeight - gridHeight) / 2;
 
     // Draw pieces area
@@ -598,8 +605,8 @@ Features:
       const pPadding = padding;
       const x = mouseX - offsetX;
       const y = mouseY - offsetY;
-      selectedPiece.row = Math.round((y - maxR * pCell / 2 - gameY) / cellSize);
-      selectedPiece.col = Math.round((x - maxC * pCell / 2 - gameX) / cellSize);
+      selectedPiece.row = Math.round((y - gameY) / cellSize);
+      selectedPiece.col = Math.round((x - gameX) / cellSize);
       const canPlaceHere = canPlace(shape, selectedPiece.row, selectedPiece.col);
       ctx.save();
       ctx.globalAlpha = canPlaceHere ? 0.8 : 0.3;
@@ -609,7 +616,7 @@ Features:
       for (let r = 0; r < maxR; r++) {
         for (let c = 0; c < shape[r].length; c++) {
           if (shape[r][c]) {
-            drawRoundedRect(x + c * pCell - maxC * pCell / 2 + pPadding, y + r * pCell - maxR * pCell / 2 + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
+            drawRoundedRect(x + c * pCell + pPadding, y + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
             ctx.fill();
           }
         }
