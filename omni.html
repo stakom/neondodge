@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmation</title>
+  <style>
+    body {
+      background: #050713;
+      color: white;
+      font-family: Inter, system-ui;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
+    }
+    .image-container {
+      margin-bottom: 30px;
+    }
+    .image-container img {
+      max-width: 400px;
+      width: 100%;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .buttons {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      min-width: 150px;
+    }
+    .yes-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+      color: white;
+    }
+    .no-btn {
+      background: linear-gradient(135deg, #333, #555);
+      color: white;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 480px) {
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        min-width: 120px;
+      }
+      .image-container img {
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="image-container">
+    <img src="omni.gif" alt="Femboy Futa House">
+  </div>
+  <div class="buttons">
+    <button class="yes-btn" onclick="window.location.href='dota.jpg'">Pretty sure</button>
+    <button class="no-btn" onclick="window.location.href='rick.mp4'">Нет</button>
+  </div>
+</body>
+</html>

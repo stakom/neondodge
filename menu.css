@@ -122,6 +122,18 @@ h1 {
   font-weight: 800;
 }
 
+/* Иконка для Фута фембой хаус */
+.femboy-icon {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  background-image: url('femb.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.femboy-icon::before {
+  display: none; /* Убираем текст FFH */
+}
+
 .game-card h2 {
   color: #fff;
   font-size: 20px;
@@ -173,7 +185,8 @@ footer a:hover {
   
   .neon-icon::before,
   .blockblast-icon::before,
-  .color-icon::before {
+  .color-icon::before,
+  .femboy-icon::before {
     font-size: 20px;
   }
 }
@@ -202,7 +215,8 @@ footer a:hover {
   
   .neon-icon::before,
   .blockblast-icon::before,
-  .color-icon::before {
+  .color-icon::before,
+  .femboy-icon::before {
     font-size: 18px;
   }
 }
