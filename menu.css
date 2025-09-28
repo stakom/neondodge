@@ -10,7 +10,7 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
-  overflow: hidden;
+  /* Убираем overflow: hidden для мобильных */
 }
 
 body {
@@ -22,12 +22,21 @@ body {
   align-items: center;
   justify-content: center;
   padding: 12px;
+  /* По умолчанию скрываем скролл */
+  overflow: hidden;
+}
+
+/* Для мобильных устройств включаем прокрутку */
+body.mobile-scroll {
+  overflow: auto;
 }
 
 .shell {
   width: 100%;
   max-width: 960px;
   text-align: center;
+  /* Добавляем отступ снизу для мобильных */
+  padding-bottom: 20px;
 }
 
 header {
@@ -164,6 +173,11 @@ footer a:hover {
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
+  body {
+    align-items: flex-start; /* Меняем выравнивание для мобильных */
+    padding-top: 20px;
+  }
+  
   .game-list {
     grid-template-columns: 1fr;
     max-width: 400px;
@@ -193,7 +207,7 @@ footer a:hover {
 
 @media (max-width: 480px) {
   body {
-    padding: 8px;
+    padding: 16px 8px;
   }
   
   .game-card {
@@ -218,5 +232,15 @@ footer a:hover {
   .color-icon::before,
   .femboy-icon::before {
     font-size: 18px;
+  }
+  
+  /* Уменьшаем отступы для очень маленьких экранов */
+  h1 {
+    margin: 0 0 16px;
+    font-size: 22px;
+  }
+  
+  header {
+    margin-bottom: 16px;
   }
 }
