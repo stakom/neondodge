@@ -9,6 +9,11 @@ Features:
 - Neon visuals with animations (scale in on placement, explode and fade on clear)
 - Web Audio sound effects for placement, line destruction, clear, and game over
 - Smoother animations with easing
+- More diverse shapes
+- Background change on full grid clear
+- New pieces generated only when all 3 are placed
+- Dragged block size matches game grid
+- Mobile snapping to nearest valid position
 */
 
 (() => {
@@ -25,6 +30,12 @@ Features:
   let mouseX = 0, mouseY = 0, offsetX = 0, offsetY = 0, isDragging = false;
   const animations = [];
   const particles = [];
+  let backgroundIndex = 0;
+  const backgrounds = [
+    'radial-gradient(600px 240px at 10% 10%, rgba(255,111,97,0.02), transparent), radial-gradient(500px 200px at 90% 90%, rgba(107,91,149,0.015), transparent), #050713',
+    'radial-gradient(600px 240px at 20% 20%, rgba(97,111,255,0.02), transparent), radial-gradient(500px 200px at 80% 80%, rgba(149,91,107,0.015), transparent), #130507',
+    'radial-gradient(600px 240px at 15% 15%, rgba(111,255,97,0.02), transparent), radial-gradient(500px 200px at 85% 85%, rgba(91,149,107,0.015), transparent), #071305'
+  ];
 
   // Canvas setup
   const canvas = document.getElementById('canvas');
@@ -146,30 +157,38 @@ Features:
     o.stop(audioCtx.currentTime + 1.1);
   }
 
-  // Block shapes
+  // Block shapes (expanded set)
   const shapes = [
-    [[1, 1], [1, 1]],
-    [[1, 1, 1]],
-    [[1], [1], [1]],
-    [[1, 1], [0, 1]],
-    [[1, 0], [1, 1]],
-    [[1, 1, 1], [0, 1, 0]],
-    [[1, 1]],
-    [[1], [1]],
-    [[1]],
-    [[1, 1, 1, 1]],
-    [[1], [1], [1], [1]],
-    [[1, 1], [1, 0]],
-    [[1, 1, 1], [0, 0, 1]]
+    [[1, 1], [1, 1]], // 2x2 square
+    [[1, 1, 1]], // 1x3 horizontal
+    [[1], [1], [1]], // 3x1 vertical
+    [[1, 1], [0, 1]], // L-shape
+    [[1, 0], [1, 1]], // Reverse L
+    [[1, 1, 1], [0, 1, 0]], // T-shape
+    [[1, 1]], // 1x2 horizontal
+    [[1], [1]], // 2x1 vertical
+    [[1]], // 1x1 single
+    [[1, 1, 1, 1]], // 1x4 horizontal
+    [[1], [1], [1], [1]], // 4x1 vertical
+    [[1, 1], [1, 0]], // Reverse L small
+    [[1, 1, 1], [0, 0, 1]], // Corner shape
+    [[1, 1, 1], [1, 0, 0]], // Reverse corner
+    [[1, 1, 0], [0, 1, 1]], // S-shape
+    [[1, 0, 0], [1, 1, 1]], // Z-shape
+    [[1, 1, 1, 1, 1]], // 1x5 horizontal
+    [[1], [1], [1], [1], [1]], // 5x1 vertical
+    [[1, 1, 1], [0, 1, 0], [0, 1, 0]], // Cross shape
+    [[1, 0, 0], [1, 1, 1], [1, 0, 0]] // H-shape
   ];
 
   // Generate 3 pieces
   function generatePieces() {
-    pieces = [];
-    for (let i = 0; i < 3; i++) {
-      const shape = shapes[Math.floor(Math.random() * shapes.length)].map(row => [...row]);
-      const hue = Math.random() * 360;
-      pieces.push({ shape, hue });
+    if (pieces.length === 0) {
+      for (let i = 0; i < 3; i++) {
+        const shape = shapes[Math.floor(Math.random() * shapes.length)].map(row => [...row]);
+        const hue = Math.random() * 360;
+        pieces.push({ shape, hue });
+      }
     }
   }
 
@@ -189,9 +208,36 @@ Features:
     return true;
   }
 
+  // Find nearest valid position for mobile snapping
+  function findNearestValidPosition(shape, row, col) {
+    const maxR = shape.length;
+    const maxC = Math.max(...shape.map(row => row.length));
+    const searchRadius = 1; // Check 1 cell around the target
+    let bestPos = null;
+    let minDist = Infinity;
+
+    for (let r = Math.max(0, row - searchRadius); r <= Math.min(GRID_SIZE - maxR, row + searchRadius); r++) {
+      for (let c = Math.max(0, col - searchRadius); c <= Math.min(GRID_SIZE - maxC, col + searchRadius); c++) {
+        if (canPlace(shape, r, c)) {
+          const dist = Math.sqrt((row - r) ** 2 + (col - c) ** 2);
+          if (dist < minDist) {
+            minDist = dist;
+            bestPos = { row: r, col: c };
+          }
+        }
+      }
+    }
+    return bestPos;
+  }
+
   // Count cells in a shape
   function countCells(shape) {
     return shape.flat().filter(cell => cell === 1).length;
+  }
+
+  // Check if grid is empty
+  function isGridEmpty() {
+    return grid.every(row => row.every(cell => cell === 0));
   }
 
   // Ease function (quadratic in-out)
@@ -202,10 +248,23 @@ Features:
   // Place the selected piece on the grid
   function placePiece() {
     if (!selectedPiece || gameOver) return;
-    const { shape, hue } = selectedPiece.piece;
-    const row = selectedPiece.row;
-    const col = selectedPiece.col;
-    if (!canPlace(shape, row, col)) return;
+    let { shape, hue } = selectedPiece.piece;
+    let row = selectedPiece.row;
+    let col = selectedPiece.col;
+
+    // Mobile snapping
+    if (window.innerWidth <= 820) {
+      const validPos = findNearestValidPosition(shape, row, col);
+      if (validPos) {
+        row = validPos.row;
+        col = validPos.col;
+      } else if (!canPlace(shape, row, col)) {
+        return; // No valid position found
+      }
+    } else if (!canPlace(shape, row, col)) {
+      return; // Invalid placement on desktop
+    }
+
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c]) {
@@ -223,8 +282,15 @@ Features:
       playLineDestructionSound();
     }
     pieces.splice(selectedPiece.index, 1);
-    generatePieces();
     selectedPiece = null;
+    if (pieces.length === 0) {
+      generatePieces();
+    }
+    if (isGridEmpty()) {
+      backgroundIndex = (backgroundIndex + 1) % backgrounds.length;
+      document.body.style.background = backgrounds[backgroundIndex];
+      score += 500;
+    }
     checkGameOver();
     updateScore();
   }
@@ -395,6 +461,10 @@ Features:
 
   // Select a piece
   function selectPiece() {
+    const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE);
+    const pCell = cellSize * 0.8; // Match game grid cell size
+    const pPadding = pCell * 0.1;
+
     if (window.innerWidth > 820) {
       if (mouseX > leftX) return;
       const pieceWidth = leftX / 3;
@@ -405,7 +475,6 @@ Features:
       const shape = pieces[index].shape;
       const maxC = Math.max(...shape.map(row => row.length));
       const maxR = shape.length;
-      const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
       const xOffset = (pieceWidth - maxC * pCell) / 2;
       const yOffset = index * pieceHeight + (pieceHeight - maxR * pCell) / 2;
       const initial_piece_left = xOffset;
@@ -423,7 +492,6 @@ Features:
       const shape = pieces[index].shape;
       const maxC = Math.max(...shape.map(row => row.length));
       const maxR = shape.length;
-      const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
       const xOffset = index * pieceWidth + (pieceWidth - maxC * pCell) / 2;
       const yOffset = (pieceHeight - maxR * pCell) / 2;
       const initial_piece_left = xOffset;
@@ -447,7 +515,10 @@ Features:
     score = 0;
     gameOver = false;
     running = true;
+    pieces = [];
     generatePieces();
+    backgroundIndex = 0;
+    document.body.style.background = backgrounds[backgroundIndex];
     updateScore();
     render();
   }
@@ -488,10 +559,10 @@ Features:
       topY = 0;
       leftX = 0;
       gameWidth = W;
-      const minPieceHeight = 120; // Minimum height for piece selection area
-      const cellSize = W / GRID_SIZE; // Base cell size on width
+      const minPieceHeight = 120;
+      const cellSize = W / GRID_SIZE;
       let gridHeight = cellSize * GRID_SIZE;
-      gameHeight = Math.min(H - minPieceHeight, gridHeight); // Ensure space for pieces
+      gameHeight = Math.min(H - minPieceHeight, gridHeight);
       bottomY = topY + gameHeight;
       console.log(`Mobile layout: W=${W}, H=${H}, gameWidth=${gameWidth}, gameHeight=${gameHeight}, bottomY=${bottomY}, cellSize=${cellSize}`);
     }
