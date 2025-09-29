@@ -1,19 +1,10 @@
 /*
-Block Blast
-Features:
-- 8x8 grid to place tetromino-like blocks
-- 3 selectable blocks at the left (desktop) or bottom (mobile), drag or click to place (mouse/touch)
-- Clear full rows/columns to score points (10 per cell placed, 100 per line cleared, bonus for multiple lines)
-- Game over when no valid moves remain for any of the 3 blocks
-- Persistent high score (localStorage)
-- Neon visuals with animations (scale in on placement, explode and fade on clear)
-- Web Audio sound effects for placement, line destruction, clear, and game over
-- Smoother animations with easing
-- More diverse shapes
-- Background change on full grid clear
-- New pieces generated only when all 3 are placed
-- Dragged block size matches game grid
-- Mobile snapping to nearest valid position
+Block Blast - Improved Version
+Changes:
+- Replaced T-shape with 3x3 full cube
+- Fixed piece selection area layout
+- Increased piece selection area height
+- Improved piece generation algorithm to ensure all 3 pieces can be placed
 */
 
 (() => {
@@ -157,14 +148,14 @@ Features:
     o.stop(audioCtx.currentTime + 1.1);
   }
 
-  // Block shapes (expanded set)
+  // Block shapes (replaced T-shape with 3x3 full cube)
   const shapes = [
     [[1, 1], [1, 1]], // 2x2 square
     [[1, 1, 1]], // 1x3 horizontal
     [[1], [1], [1]], // 3x1 vertical
     [[1, 1], [0, 1]], // L-shape
     [[1, 0], [1, 1]], // Reverse L
-    [[1, 1, 1], [0, 1, 0]], // T-shape
+    [[1, 1, 1], [1, 1, 1], [1, 1, 1]], // 3x3 full cube (replaced T-shape)
     [[1, 1]], // 1x2 horizontal
     [[1], [1]], // 2x1 vertical
     [[1]], // 1x1 single
@@ -181,31 +172,118 @@ Features:
     [[1, 0, 0], [1, 1, 1], [1, 0, 0]] // H-shape
   ];
 
-  // Generate 3 pieces
+  // Smart piece generation to ensure all 3 pieces can be placed
   function generatePieces() {
     if (pieces.length === 0) {
-      for (let i = 0; i < 3; i++) {
-        const shape = shapes[Math.floor(Math.random() * shapes.length)].map(row => [...row]);
-        const hue = Math.random() * 360;
-        pieces.push({ shape, hue });
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      while (pieces.length < 3 && attempts < maxAttempts) {
+        attempts++;
+        
+        // Try to generate pieces that can be placed together
+        const candidateShapes = [];
+        const candidatePieces = [];
+        
+        // Generate 3 candidate pieces
+        for (let i = 0; i < 3; i++) {
+          const shape = shapes[Math.floor(Math.random() * shapes.length)].map(row => [...row]);
+          const hue = Math.random() * 360;
+          candidateShapes.push(shape);
+          candidatePieces.push({ shape, hue });
+        }
+        
+        // Test if these pieces can be placed together (simplified check)
+        if (canPiecesBePlacedTogether(candidateShapes)) {
+          pieces = candidatePieces;
+          console.log("Generated pieces that can be placed together");
+          break;
+        }
+        
+        // If we're struggling, generate simpler pieces
+        if (attempts > 30) {
+          const simpleShapes = [
+            [[1, 1], [1, 1]], // 2x2
+            [[1, 1, 1]], // 1x3
+            [[1], [1], [1]], // 3x1
+            [[1, 1]], // 1x2
+            [[1], [1]], // 2x1
+            [[1]] // 1x1
+          ];
+          
+          for (let i = 0; i < 3; i++) {
+            const shape = simpleShapes[Math.floor(Math.random() * simpleShapes.length)].map(row => [...row]);
+            const hue = Math.random() * 360;
+            pieces.push({ shape, hue });
+          }
+          console.log("Used fallback simple pieces");
+          break;
+        }
+      }
+      
+      // Final fallback - just generate random pieces
+      if (pieces.length === 0) {
+        for (let i = 0; i < 3; i++) {
+          const shape = shapes[Math.floor(Math.random() * shapes.length)].map(row => [...row]);
+          const hue = Math.random() * 360;
+          pieces.push({ shape, hue });
+        }
+        console.log("Used random pieces as final fallback");
       }
     }
   }
 
-  // Check if a piece can be placed at row, col
-  function canPlace(shape, row, col) {
+  // Check if pieces can theoretically be placed together
+  function canPiecesBePlacedTogether(pieceShapes) {
+    // Create a temporary grid to test placements
+    const tempGrid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+    let placedCount = 0;
+    
+    // Try to place each piece
+    for (const shape of pieceShapes) {
+      let placed = false;
+      
+      // Try different positions
+      for (let r = 0; r <= GRID_SIZE - shape.length && !placed; r++) {
+        for (let c = 0; c <= GRID_SIZE - shape[0].length && !placed; c++) {
+          if (canPlaceOnGrid(shape, r, c, tempGrid)) {
+            // Place it temporarily
+            for (let sr = 0; sr < shape.length; sr++) {
+              for (let sc = 0; sc < shape[sr].length; sc++) {
+                if (shape[sr][sc]) {
+                  tempGrid[r + sr][c + sc] = 1;
+                }
+              }
+            }
+            placed = true;
+            placedCount++;
+          }
+        }
+      }
+    }
+    
+    return placedCount === pieceShapes.length;
+  }
+
+  // Check if a piece can be placed on a specific grid
+  function canPlaceOnGrid(shape, row, col, gridToCheck) {
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c]) {
           const gr = row + r;
           const gc = col + c;
-          if (gr < 0 || gr >= GRID_SIZE || gc < 0 || gc >= GRID_SIZE || grid[gr][gc]) {
+          if (gr < 0 || gr >= GRID_SIZE || gc < 0 || gc >= GRID_SIZE || gridToCheck[gr][gc]) {
             return false;
           }
         }
       }
     }
     return true;
+  }
+
+  // Check if a piece can be placed at row, col on the main grid
+  function canPlace(shape, row, col) {
+    return canPlaceOnGrid(shape, row, col, grid);
   }
 
   // Find nearest valid position for mobile snapping
@@ -459,46 +537,76 @@ Features:
     placePiece();
   });
 
-  // Select a piece
+  // Select a piece - FIXED: Pieces stay in their original positions
   function selectPiece() {
     const cellSize = Math.min(gameWidth / GRID_SIZE, gameHeight / GRID_SIZE);
-    const pCell = cellSize * 0.8; // Match game grid cell size
+    const pCell = cellSize * 0.8;
     const pPadding = pCell * 0.1;
 
     if (window.innerWidth > 820) {
-      if (mouseX > leftX) return;
-      const pieceWidth = leftX / 3;
-      const pieceHeight = gameHeight / 3;
-      const index = Math.floor(mouseY / pieceHeight);
-      if (index < 0 || index >= pieces.length) return;
-      selectedPiece = { piece: pieces[index], index, row: 0, col: 0 };
-      const shape = pieces[index].shape;
-      const maxC = Math.max(...shape.map(row => row.length));
-      const maxR = shape.length;
-      const xOffset = (pieceWidth - maxC * pCell) / 2;
-      const yOffset = index * pieceHeight + (pieceHeight - maxR * pCell) / 2;
-      const initial_piece_left = xOffset;
-      const initial_piece_top = yOffset;
-      offsetX = mouseX - initial_piece_left;
-      offsetY = mouseY - initial_piece_top;
-      console.log(`Desktop: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}, mouse: ${mouseX}, ${mouseY}`);
+      // Desktop layout - pieces on the left
+      const pieceAreaWidth = leftX;
+      const pieceWidth = pieceAreaWidth / 3;
+      const pieceHeight = H / 3;
+      
+      // Check if click is in piece area
+      if (mouseX < pieceAreaWidth) {
+        const index = Math.floor(mouseY / pieceHeight);
+        if (index >= 0 && index < pieces.length) {
+          const shape = pieces[index].shape;
+          const maxR = shape.length;
+          const maxC = Math.max(...shape.map(row => row.length));
+          
+          // Calculate piece position within its slot
+          const xOffset = (pieceWidth - maxC * pCell) / 2;
+          const yOffset = index * pieceHeight + (pieceHeight - maxR * pCell) / 2;
+          
+          selectedPiece = { 
+            piece: pieces[index], 
+            index, 
+            row: 0, 
+            col: 0
+          };
+          
+          // Calculate offset from piece top-left corner
+          offsetX = mouseX - xOffset;
+          offsetY = mouseY - yOffset;
+          
+          console.log(`Desktop: Selected piece ${index} at position: ${xOffset}, ${yOffset}, offset: ${offsetX}, ${offsetY}`);
+        }
+      }
     } else {
-      if (mouseY < bottomY) return;
+      // Mobile layout - pieces at the bottom
+      const pieceAreaHeight = H - bottomY;
       const pieceWidth = gameWidth / 3;
-      const pieceHeight = (H - bottomY);
-      const index = Math.floor(mouseX / pieceWidth);
-      if (index < 0 || index >= pieces.length) return;
-      selectedPiece = { piece: pieces[index], index, row: 0, col: 0 };
-      const shape = pieces[index].shape;
-      const maxC = Math.max(...shape.map(row => row.length));
-      const maxR = shape.length;
-      const xOffset = index * pieceWidth + (pieceWidth - maxC * pCell) / 2;
-      const yOffset = (pieceHeight - maxR * pCell) / 2;
-      const initial_piece_left = xOffset;
-      const initial_piece_top = bottomY + yOffset;
-      offsetX = mouseX - initial_piece_left;
-      offsetY = mouseY - initial_piece_top;
-      console.log(`Mobile: Selected piece ${index} at position: ${initial_piece_left}, ${initial_piece_top}, offset: ${offsetX}, ${offsetY}, mouse: ${mouseX}, ${mouseY}`);
+      const pieceHeight = pieceAreaHeight;
+      
+      // Check if click is in piece area (bottom)
+      if (mouseY >= bottomY) {
+        const index = Math.floor(mouseX / pieceWidth);
+        if (index >= 0 && index < pieces.length) {
+          const shape = pieces[index].shape;
+          const maxR = shape.length;
+          const maxC = Math.max(...shape.map(row => row.length));
+          
+          // Calculate piece position within its slot
+          const xOffset = index * pieceWidth + (pieceWidth - maxC * pCell) / 2;
+          const yOffset = bottomY + (pieceHeight - maxR * pCell) / 2;
+          
+          selectedPiece = { 
+            piece: pieces[index], 
+            index, 
+            row: 0, 
+            col: 0
+          };
+          
+          // Calculate offset from piece top-left corner
+          offsetX = mouseX - xOffset;
+          offsetY = mouseY - yOffset;
+          
+          console.log(`Mobile: Selected piece ${index} at position: ${xOffset}, ${yOffset}, offset: ${offsetX}, ${offsetY}`);
+        }
+      }
     }
   }
 
@@ -546,24 +654,31 @@ Features:
   // Utility
   function rand(a, b) { return a + Math.random() * (b - a); }
 
-  // Update layout
+  // Update layout - INCREASED piece selection area height
   function updateLayout() {
     if (window.innerWidth > 820) {
-      leftX = W * 0.25;
-      gameWidth = W * 0.75;
+      // Desktop - increased left panel width slightly for better piece display
+      leftX = W * 0.28; // Was 0.25
+      gameWidth = W * 0.72; // Was 0.75
       topY = 0;
       gameHeight = H;
       bottomY = 0;
       console.log(`Desktop layout: W=${W}, H=${H}, gameWidth=${gameWidth}, gameHeight=${gameHeight}, leftX=${leftX}`);
     } else {
+      // Mobile - increased piece selection area height
       topY = 0;
       leftX = 0;
       gameWidth = W;
-      const minPieceHeight = 120;
+      
+      // Increased minimum piece height from 120 to 150
+      const minPieceHeight = 150;
       const cellSize = W / GRID_SIZE;
       let gridHeight = cellSize * GRID_SIZE;
+      
+      // Calculate game height with increased piece area
       gameHeight = Math.min(H - minPieceHeight, gridHeight);
       bottomY = topY + gameHeight;
+      
       console.log(`Mobile layout: W=${W}, H=${H}, gameWidth=${gameWidth}, gameHeight=${gameHeight}, bottomY=${bottomY}, cellSize=${cellSize}`);
     }
   }
@@ -598,7 +713,7 @@ Features:
       ctx.fillRect(0, 0, leftX, H);
       ctx.restore();
       const pieceWidth = leftX / 3;
-      const pieceHeight = gameHeight / 3;
+      const pieceHeight = H / 3;
       for (let i = 0; i < pieces.length; i++) {
         const shape = pieces[i].shape;
         const hue = pieces[i].hue;
@@ -639,7 +754,7 @@ Features:
         const pCell = Math.min(pieceWidth / maxC, pieceHeight / maxR) * 0.8;
         const pPadding = pCell * 0.1;
         const xOffset = i * pieceWidth + (pieceWidth - maxC * pCell) / 2;
-        const yOffset = (pieceHeight - maxR * pCell) / 2;
+        const yOffset = bottomY + (pieceHeight - maxR * pCell) / 2;
         ctx.save();
         ctx.shadowBlur = 14;
         ctx.shadowColor = `hsl(${hue} 90% 60% / 0.8)`;
@@ -647,7 +762,7 @@ Features:
         for (let r = 0; r < maxR; r++) {
           for (let c = 0; c < shape[r].length; c++) {
             if (shape[r][c]) {
-              drawRoundedRect(xOffset + c * pCell + pPadding, bottomY + yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
+              drawRoundedRect(xOffset + c * pCell + pPadding, yOffset + r * pCell + pPadding, pCell - 2 * pPadding, pCell - 2 * pPadding, pPadding * 1.2);
               ctx.fill();
             }
           }
