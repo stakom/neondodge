@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Stakom - Генератор Хаоса</title>
+  <link rel="stylesheet" href="chaos.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%23ff6f61'>S</text></svg>">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <a href="index.html" class="logo">Stakom</a>
+        <div class="game-logo">CH</div>
+      </div>
+      <div>
+        <h1>Генератор Хаоса</h1>
+        <div class="subtitle muted">Создавайте конструкции, направляйте шары в контейнер</div>
+      </div>
+    </header>
+    
+    <div class="card">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+    
+    <div class="ui">
+      <div class="panel">
+        <h2>Управление</h2>
+        <div class="muted">Рисуйте линии, кликая и перетаскивая</div>
+        <div class="controls">
+          <button id="btnStart" class="btn primary">▶ Запустить шары</button>
+          <button id="btnClear" class="btn">🗑️ Очистить</button>
+          <a href="index.html"><button class="btn">↩ В меню</button></a>
+        </div>
+        <div class="goal-panel">
+          <div class="goal-text">🎯 Цель: направить шары в синий контейнер внизу</div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>Типы шаров</h2>
+        <div class="ball-types">
+          <div class="ball-type">
+            <div class="ball-preview ball-red"></div>
+            <span class="ball-label">Красные - отскакивают</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-blue"></div>
+            <span class="ball-label">Синие - прилипают</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-green"></div>
+            <span class="ball-label">Зеленые - делятся</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-purple"></div>
+            <span class="ball-label">Фиолетовые - ускоряются</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>Статистика</h2>
+        <div class="score-row">
+          <span class="muted">Активных шаров</span>
+          <span class="score-big" id="ballCount">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Шаров в контейнере</span>
+          <span class="score-big" id="containerCount">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Линий нарисовано</span>
+          <span class="score-big" id="lineCount">0</span>
+        </div>
+      </div>
+
+      <div class="panel mobile-controls">
+        <h2>Мобильное управление</h2>
+        <div class="muted">Используйте кнопки для удобства на мобильных</div>
+        <div class="controls">
+          <button id="btnAddBall" class="btn">➕ Добавить шар</button>
+          <button id="btnUndo" class="btn">↶ Отменить линию</button>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+    </footer>
+  </div>
+
+  <script src="chaos.js"></script>
+</body>
+</html>
