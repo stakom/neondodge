@@ -10,7 +10,7 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
-  overflow: hidden;
+  /* Убираем overflow: hidden чтобы была прокрутка */
 }
 
 body {
@@ -19,15 +19,17 @@ body {
               var(--bg);
   color: var(--muted);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Меняем center на flex-start для прокрутки */
   justify-content: center;
   padding: 12px;
+  min-height: 100vh; /* Добавляем минимальную высоту */
 }
 
 .shell {
   width: 100%;
   max-width: 960px;
   text-align: center;
+  margin: 0 auto; /* Центрируем контент */
 }
 
 header {
@@ -56,6 +58,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+  margin-bottom: 20px; /* Добавляем отступ снизу */
 }
 
 .game-card {
@@ -169,6 +172,7 @@ footer {
   text-align: center;
   font-size: 12px;
   color: var(--muted);
+  padding: 20px 0; /* Добавляем отступы для footer */
 }
 
 footer a {
@@ -182,18 +186,32 @@ footer a:hover {
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
+  body {
+    padding: 12px 8px; /* Увеличиваем боковые отступы */
+    align-items: flex-start; /* Выравниваем по верху */
+    min-height: 100vh;
+    height: auto; /* Разрешаем высоту увеличиваться */
+    overflow-y: auto; /* Включаем вертикальную прокрутку */
+  }
+
+  .shell {
+    padding: 10px 0; /* Добавляем отступы сверху и снизу */
+  }
+
   .game-list {
     grid-template-columns: 1fr;
     max-width: 400px;
-    margin: 0 auto;
+    margin: 0 auto 20px;
   }
   
   h1 {
     font-size: 24px;
+    margin: 0 0 16px;
   }
   
   .logo {
     font-size: 28px;
+    margin-bottom: 8px;
   }
   
   .game-icon {
@@ -207,11 +225,15 @@ footer a:hover {
   .chaos-icon::before {
     font-size: 20px;
   }
+
+  .game-card {
+    padding: 14px;
+  }
 }
 
 @media (max-width: 480px) {
   body {
-    padding: 8px;
+    padding: 8px 6px;
   }
   
   .game-card {
@@ -236,5 +258,88 @@ footer a:hover {
   .color-icon::before,
   .chaos-icon::before {
     font-size: 18px;
+  }
+
+  footer {
+    padding: 15px 0;
+    font-size: 11px;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-height: 600px) and (max-width: 768px) {
+  body {
+    padding: 6px 4px;
+  }
+  
+  .shell {
+    padding: 5px 0;
+  }
+  
+  header {
+    margin-bottom: 12px;
+  }
+  
+  h1 {
+    margin: 0 0 12px;
+    font-size: 22px;
+  }
+  
+  .game-list {
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .game-card {
+    padding: 10px;
+  }
+  
+  .game-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+  }
+  
+  .neon-icon::before,
+  .blockblast-icon::before,
+  .color-icon::before,
+  .chaos-icon::before {
+    font-size: 16px;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    padding: 4px;
+  }
+  
+  .shell {
+    max-width: 100%;
+  }
+  
+  .game-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .game-card {
+    padding: 8px;
+  }
+  
+  .game-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 6px;
+  }
+  
+  .game-card h2 {
+    font-size: 14px;
+    margin: 0 0 4px;
+  }
+  
+  .game-card p {
+    font-size: 11px;
+    line-height: 1.2;
   }
 }
