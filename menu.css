@@ -23,6 +23,7 @@ body {
   justify-content: center;
   padding: 12px;
   min-height: 100vh; /* Добавляем минимальную высоту */
+  overflow-y: auto; /* Включаем вертикальную прокрутку для body */
 }
 
 .shell {
@@ -30,6 +31,7 @@ body {
   max-width: 960px;
   text-align: center;
   margin: 0 auto; /* Центрируем контент */
+  padding: 20px 0; /* Добавляем отступы сверху и снизу для прокрутки */
 }
 
 header {
@@ -196,6 +198,7 @@ footer a:hover {
 
   .shell {
     padding: 10px 0; /* Добавляем отступы сверху и снизу */
+    min-height: auto; /* Убираем минимальную высоту для оболочки */
   }
 
   .game-list {
@@ -270,6 +273,7 @@ footer a:hover {
 @media (max-height: 600px) and (max-width: 768px) {
   body {
     padding: 6px 4px;
+    overflow-y: auto; /* Обеспечиваем прокрутку на маленьких экранах */
   }
   
   .shell {
@@ -312,10 +316,12 @@ footer a:hover {
 @media (max-height: 500px) and (orientation: landscape) {
   body {
     padding: 4px;
+    overflow-y: auto; /* Обеспечиваем прокрутку в ландшафтном режиме */
   }
   
   .shell {
     max-width: 100%;
+    padding: 10px 0;
   }
   
   .game-list {
@@ -341,5 +347,35 @@ footer a:hover {
   .game-card p {
     font-size: 11px;
     line-height: 1.2;
+  }
+}
+
+/* Дополнительные улучшения для очень маленьких экранов */
+@media (max-height: 400px) {
+  body {
+    padding: 2px;
+  }
+  
+  .shell {
+    padding: 5px 0;
+  }
+  
+  header {
+    margin-bottom: 8px;
+  }
+  
+  h1 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  
+  .game-list {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  
+  footer {
+    padding: 10px 0;
+    font-size: 10px;
   }
 }
