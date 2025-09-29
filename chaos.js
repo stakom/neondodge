@@ -16,10 +16,31 @@ class ChaosGenerator {
         };
         this.ballsInContainer = 0;
         this.maxBalls = 100;
+        this.lastSplitTime = 0;
+        this.splitCooldown = 500; // 500ms cooldown between splits
         
         this.setupEventListeners();
         this.resizeCanvas();
         this.updateContainerPosition();
+        
+        // Устанавливаем плотность пикселей для четкой графики
+        this.setPixelRatio();
+    }
+
+    setPixelRatio() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.canvas.getBoundingClientRect();
+        
+        // Устанавливаем реальный размер canvas
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        
+        // Масштабируем контекст
+        this.ctx.scale(dpr, dpr);
+        
+        // Устанавливаем CSS размер
+        this.canvas.style.width = rect.width + 'px';
+        this.canvas.style.height = rect.height + 'px';
     }
 
     setupEventListeners() {
@@ -60,16 +81,31 @@ class ChaosGenerator {
 
     resizeCanvas() {
         const rect = this.canvas.parentElement.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = Math.min(rect.width * 0.75, window.innerHeight * 0.7);
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Устанавливаем реальный размер
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = Math.min(rect.width * 0.75, window.innerHeight * 0.7) * dpr;
+        
+        // Устанавливаем CSS размер
+        this.canvas.style.width = rect.width + 'px';
+        this.canvas.style.height = Math.min(rect.width * 0.75, window.innerHeight * 0.7) + 'px';
+        
+        // Сбрасываем трансформацию и устанавливаем новую
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(dpr, dpr);
+        
         this.updateContainerPosition();
         this.render();
     }
 
     updateContainerPosition() {
-        this.container.width = this.canvas.width * 0.5; // Уменьшил контейнер
-        this.container.x = (this.canvas.width - this.container.width) / 2;
-        this.container.y = this.canvas.height - this.container.height - 10;
+        const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
+        
+        this.container.width = canvasWidth * 0.5;
+        this.container.x = (canvasWidth - this.container.width) / 2;
+        this.container.y = canvasHeight - this.container.height - 10;
     }
 
     startDrawing(e) {
@@ -117,8 +153,9 @@ class ChaosGenerator {
 
     getMousePos(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
+        const dpr = window.devicePixelRatio || 1;
+        const scaleX = (this.canvas.width / dpr) / rect.width;
+        const scaleY = (this.canvas.height / dpr) / rect.height;
         
         return {
             x: (e.clientX - rect.left) * scaleX,
@@ -156,11 +193,12 @@ class ChaosGenerator {
         const type = types[Math.floor(Math.random() * types.length)];
         
         // Spawn balls in the top 30% of the canvas to avoid initial collisions
-        const spawnAreaTop = this.canvas.height * 0.3;
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
+        const spawnAreaTop = canvasHeight * 0.3;
         const ballRadius = this.isMobile() ? 5 : 6;
         
         this.balls.push({
-            x: Math.random() * this.canvas.width,
+            x: Math.random() * (this.canvas.width / (window.devicePixelRatio || 1)),
             y: Math.random() * spawnAreaTop,
             vx: (Math.random() - 0.5) * 3,
             vy: (Math.random() * 1) + 0.5,
@@ -169,7 +207,8 @@ class ChaosGenerator {
             behavior: type.behavior,
             stuck: false,
             stuckTo: null,
-            inContainer: false
+            inContainer: false,
+            lastSplit: 0 // Время последнего разделения
         });
 
         if (this.isRunning) {
@@ -210,6 +249,7 @@ class ChaosGenerator {
 
     updatePhysics() {
         let activeBalls = 0;
+        const currentTime = Date.now();
         
         this.balls.forEach((ball, index) => {
             if (ball.inContainer) {
@@ -242,15 +282,16 @@ class ChaosGenerator {
                     const p2 = line.points[i + 1];
                     
                     if (this.lineCircleCollision(p1, p2, ball)) {
-                        this.handleCollision(ball, p1, p2);
+                        this.handleCollision(ball, p1, p2, currentTime);
                     }
                 }
             });
 
             // Wall collisions
-            if (ball.x - ball.radius < 0 || ball.x + ball.radius > this.canvas.width) {
+            const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvasWidth) {
                 ball.vx *= -0.8;
-                ball.x = Math.max(ball.radius, Math.min(this.canvas.width - ball.radius, ball.x));
+                ball.x = Math.max(ball.radius, Math.min(canvasWidth - ball.radius, ball.x));
             }
             
             if (ball.y - ball.radius < 0) {
@@ -305,7 +346,7 @@ class ChaosGenerator {
         return innerProduct >= 0 && innerProduct <= dx * dx + dy * dy;
     }
 
-    handleCollision(ball, p1, p2) {
+    handleCollision(ball, p1, p2, currentTime) {
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
         const normal = { x: -dy, y: dx };
@@ -334,14 +375,18 @@ class ChaosGenerator {
             case 'split':
                 ball.vx = ball.vx - 2 * dot * normal.x;
                 ball.vy = ball.vy - 2 * dot * normal.y;
-                if (this.balls.length < this.maxBalls) {
+                
+                // Добавляем кулдаун на разделение (максимум 1 разделение в 500ms)
+                if (this.balls.length < this.maxBalls && currentTime - ball.lastSplit > this.splitCooldown) {
+                    ball.lastSplit = currentTime;
                     this.balls.push({
                         ...ball,
                         x: ball.x + normal.x * 15,
                         y: ball.y + normal.y * 15,
                         vx: -ball.vx * 0.7,
                         vy: -ball.vy * 0.7,
-                        radius: Math.max(3, ball.radius * 0.8)
+                        radius: Math.max(3, ball.radius * 0.8),
+                        lastSplit: currentTime // Новый шар тоже получает кулдаун
                     });
                 }
                 break;
@@ -360,50 +405,23 @@ class ChaosGenerator {
     }
 
     render() {
-        // Create gradient background for game area
-        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-        gradient.addColorStop(0, 'rgba(5, 7, 19, 0.95)');
-        gradient.addColorStop(1, 'rgba(8, 10, 28, 0.95)');
+        const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
         
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear canvas
+        this.ctx.fillStyle = 'rgba(5, 7, 19, 0.95)';
+        this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // Add subtle grid pattern
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
-        this.ctx.lineWidth = 1;
-        const gridSize = 40;
-        
-        for (let x = 0; x <= this.canvas.width; x += gridSize) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.canvas.height);
-            this.ctx.stroke();
-        }
-        
-        for (let y = 0; y <= this.canvas.height; y += gridSize) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.canvas.width, y);
-            this.ctx.stroke();
-        }
-
-        // Draw container with improved styling
-        const containerGradient = this.ctx.createLinearGradient(
-            this.container.x, this.container.y,
-            this.container.x, this.container.y + this.container.height
-        );
-        containerGradient.addColorStop(0, 'rgba(0, 246, 255, 0.2)');
-        containerGradient.addColorStop(1, 'rgba(0, 246, 255, 0.1)');
-        
-        this.ctx.fillStyle = containerGradient;
+        // Draw container
+        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.15)';
         this.ctx.strokeStyle = 'rgba(0, 246, 255, 0.6)';
         this.ctx.lineWidth = 2;
         this.ctx.fillRect(this.container.x, this.container.y, this.container.width, this.container.height);
         this.ctx.strokeRect(this.container.x, this.container.y, this.container.width, this.container.height);
         
-        // Draw container label with better styling
-        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.9)';
-        this.ctx.font = this.isMobile() ? 'bold 10px Inter' : 'bold 12px Inter';
+        // Draw container label
+        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.8)';
+        this.ctx.font = this.isMobile() ? '10px Inter' : '12px Inter';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(
@@ -412,7 +430,7 @@ class ChaosGenerator {
             this.container.y + this.container.height / 2
         );
 
-        // Draw lines with glow effect
+        // Draw lines
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
@@ -424,10 +442,7 @@ class ChaosGenerator {
             }
             this.ctx.strokeStyle = line.color;
             this.ctx.lineWidth = line.width;
-            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
-            this.ctx.shadowBlur = 4;
             this.ctx.stroke();
-            this.ctx.shadowBlur = 0;
         });
 
         // Draw current line being drawn
@@ -439,60 +454,25 @@ class ChaosGenerator {
             }
             this.ctx.strokeStyle = this.currentLine.color;
             this.ctx.lineWidth = this.currentLine.width;
-            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
-            this.ctx.shadowBlur = 6;
             this.ctx.stroke();
-            this.ctx.shadowBlur = 0;
         }
 
-        // Draw balls with improved styling
+        // Draw balls (оригинальный простой стиль)
         this.balls.forEach(ball => {
             this.ctx.beginPath();
             this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            
-            // Create gradient for balls
-            const ballGradient = this.ctx.createRadialGradient(
-                ball.x - ball.radius/3, ball.y - ball.radius/3, 0,
-                ball.x, ball.y, ball.radius
-            );
-            ballGradient.addColorStop(0, ball.color);
-            ballGradient.addColorStop(1, this.darkenColor(ball.color, 0.3));
-            
-            this.ctx.fillStyle = ballGradient;
+            this.ctx.fillStyle = ball.color;
             
             // Add glow effect for active balls
             if (!ball.inContainer) {
                 this.ctx.shadowColor = ball.color;
-                this.ctx.shadowBlur = 12;
+                this.ctx.shadowBlur = 8;
                 this.ctx.fill();
                 this.ctx.shadowBlur = 0;
             } else {
                 this.ctx.fill();
             }
-
-            // Add highlight to balls
-            this.ctx.beginPath();
-            this.ctx.arc(ball.x - ball.radius/3, ball.y - ball.radius/3, ball.radius/3, 0, Math.PI * 2);
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            this.ctx.fill();
         });
-    }
-
-    darkenColor(color, factor) {
-        // Convert hex to RGB
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        
-        // Darken
-        const darkened = {
-            r: Math.floor(r * (1 - factor)),
-            g: Math.floor(g * (1 - factor)),
-            b: Math.floor(b * (1 - factor))
-        };
-        
-        return `rgb(${darkened.r}, ${darkened.g}, ${darkened.b})`;
     }
 }
 
