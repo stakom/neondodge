@@ -5,6 +5,30 @@
   const bestEl = document.getElementById('best');
   const restartBtn = document.getElementById('restartBtn');
 
+  // === БЛОКИРОВКА СВАЙПОВ ДЛЯ TELEGRAM ===
+  function isTelegramWebView() {
+    return /Telegram|Twitter|Facebook/.test(navigator.userAgent) || 
+           window.TelegramWebviewProxy !== undefined;
+  }
+
+  function preventDefaultSwipe(e) {
+    if (e.target === canvas || canvas.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }
+
+  // Блокируем свайпы только в Telegram WebView
+  if (isTelegramWebView()) {
+    document.addEventListener('touchstart', preventDefaultSwipe, { passive: false });
+    document.addEventListener('touchmove', preventDefaultSwipe, { passive: false });
+    document.addEventListener('touchend', preventDefaultSwipe, { passive: false });
+    
+    console.log('Telegram WebView detected: swipe gestures blocked');
+  }
+  // === КОНЕЦ БЛОКИРОВКИ СВАЙПОВ ===
+
   const SIZE = 4;
   let CELL_SIZE = 100;
   const GAP = 10;
