@@ -77,7 +77,7 @@ class ChaosGenerator {
         const pos = this.getMousePos(e);
         this.currentLine = {
             points: [pos],
-            color: `rgba(255, 255, 255, 0.8)`,
+            color: `rgba(255, 255, 255, 0.9)`,
             width: this.isMobile() ? 4 : 3
         };
     }
@@ -360,23 +360,59 @@ class ChaosGenerator {
     }
 
     render() {
-        this.ctx.fillStyle = 'rgba(5, 7, 19, 0.8)';
+        // Create gradient background for game area
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        gradient.addColorStop(0, 'rgba(5, 7, 19, 0.95)');
+        gradient.addColorStop(1, 'rgba(8, 10, 28, 0.95)');
+        
+        this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw container
-        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.15)';
+        // Add subtle grid pattern
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+        this.ctx.lineWidth = 1;
+        const gridSize = 40;
+        
+        for (let x = 0; x <= this.canvas.width; x += gridSize) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.stroke();
+        }
+        
+        for (let y = 0; y <= this.canvas.height; y += gridSize) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.stroke();
+        }
+
+        // Draw container with improved styling
+        const containerGradient = this.ctx.createLinearGradient(
+            this.container.x, this.container.y,
+            this.container.x, this.container.y + this.container.height
+        );
+        containerGradient.addColorStop(0, 'rgba(0, 246, 255, 0.2)');
+        containerGradient.addColorStop(1, 'rgba(0, 246, 255, 0.1)');
+        
+        this.ctx.fillStyle = containerGradient;
         this.ctx.strokeStyle = 'rgba(0, 246, 255, 0.6)';
         this.ctx.lineWidth = 2;
         this.ctx.fillRect(this.container.x, this.container.y, this.container.width, this.container.height);
         this.ctx.strokeRect(this.container.x, this.container.y, this.container.width, this.container.height);
         
-        // Draw container label
-        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.8)';
-        this.ctx.font = this.isMobile() ? '10px Inter' : '12px Inter';
+        // Draw container label with better styling
+        this.ctx.fillStyle = 'rgba(0, 246, 255, 0.9)';
+        this.ctx.font = this.isMobile() ? 'bold 10px Inter' : 'bold 12px Inter';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('КОНТЕЙНЕР', this.container.x + this.container.width / 2, this.container.y + this.container.height / 2 + 4);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(
+            'КОНТЕЙНЕР', 
+            this.container.x + this.container.width / 2, 
+            this.container.y + this.container.height / 2
+        );
 
-        // Draw lines
+        // Draw lines with glow effect
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
@@ -388,7 +424,10 @@ class ChaosGenerator {
             }
             this.ctx.strokeStyle = line.color;
             this.ctx.lineWidth = line.width;
+            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.shadowBlur = 4;
             this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
         });
 
         // Draw current line being drawn
@@ -400,25 +439,60 @@ class ChaosGenerator {
             }
             this.ctx.strokeStyle = this.currentLine.color;
             this.ctx.lineWidth = this.currentLine.width;
+            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+            this.ctx.shadowBlur = 6;
             this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
         }
 
-        // Draw balls
+        // Draw balls with improved styling
         this.balls.forEach(ball => {
             this.ctx.beginPath();
             this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = ball.color;
+            
+            // Create gradient for balls
+            const ballGradient = this.ctx.createRadialGradient(
+                ball.x - ball.radius/3, ball.y - ball.radius/3, 0,
+                ball.x, ball.y, ball.radius
+            );
+            ballGradient.addColorStop(0, ball.color);
+            ballGradient.addColorStop(1, this.darkenColor(ball.color, 0.3));
+            
+            this.ctx.fillStyle = ballGradient;
             
             // Add glow effect for active balls
             if (!ball.inContainer) {
                 this.ctx.shadowColor = ball.color;
-                this.ctx.shadowBlur = 8;
+                this.ctx.shadowBlur = 12;
                 this.ctx.fill();
                 this.ctx.shadowBlur = 0;
             } else {
                 this.ctx.fill();
             }
+
+            // Add highlight to balls
+            this.ctx.beginPath();
+            this.ctx.arc(ball.x - ball.radius/3, ball.y - ball.radius/3, ball.radius/3, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.fill();
         });
+    }
+
+    darkenColor(color, factor) {
+        // Convert hex to RGB
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Darken
+        const darkened = {
+            r: Math.floor(r * (1 - factor)),
+            g: Math.floor(g * (1 - factor)),
+            b: Math.floor(b * (1 - factor))
+        };
+        
+        return `rgb(${darkened.r}, ${darkened.g}, ${darkened.b})`;
     }
 }
 
