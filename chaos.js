@@ -15,26 +15,24 @@ class ChaosGenerator {
             height: 30
         };
         this.ballsInContainer = 0;
-        this.maxBalls = 1000; // Увеличен лимит шаров
+        this.maxBalls = 1000;
         this.lastSplitTime = 0;
         this.splitCooldown = 500;
         
-        // Новые переменные для игрового процесса
-        this.gameTime = 200; // 200 секунд игры
+        this.gameTime = 200;
         this.timeLeft = this.gameTime;
-        this.maxBallsInContainer = 150; // Максимум шаров в контейнере
+        this.maxBallsInContainer = 150;
         this.gameStarted = false;
         this.gameOver = false;
         this.playerWon = false;
         this.lastBallSpawnTime = 0;
-        this.ballSpawnInterval = 200; // Ускоренное появление шаров (мс)
+        this.ballSpawnInterval = 200;
         
         this.setupEventListeners();
         this.resizeCanvas();
         this.updateContainerPosition();
         this.setPixelRatio();
         
-        // Запуск таймера обновления UI
         this.updateUITimer = setInterval(() => this.updateUI(), 100);
     }
 
@@ -60,14 +58,6 @@ class ChaosGenerator {
         this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
         this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
         this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
-
-        document.getElementById('btnAddBall')?.addEventListener('click', () => {
-            this.addRandomBall();
-        });
-
-        document.getElementById('btnUndo')?.addEventListener('click', () => {
-            this.undoLastLine();
-        });
 
         window.addEventListener('resize', this.resizeCanvas.bind(this));
         
@@ -182,7 +172,6 @@ class ChaosGenerator {
         this.timeLeft = this.gameTime;
         this.balls = [];
         
-        // Создаем начальные шары
         for (let i = 0; i < 15; i++) {
             this.addRandomBall();
         }
@@ -193,7 +182,6 @@ class ChaosGenerator {
     addRandomBall() {
         if (this.balls.length >= this.maxBalls || this.gameOver) return;
         
-        // Простые разноцветные шары без уникальных свойств
         const colors = ['#ff6f61', '#6b5b95', '#61ff6f', '#d46bff', '#ffd166', '#06d6a0', '#118ab2', '#ef476f'];
         const color = colors[Math.floor(Math.random() * colors.length)];
         
@@ -204,8 +192,8 @@ class ChaosGenerator {
         this.balls.push({
             x: Math.random() * (this.canvas.width / (window.devicePixelRatio || 1)),
             y: Math.random() * spawnAreaTop,
-            vx: (Math.random() - 0.5) * 3, // Обычная скорость
-            vy: (Math.random() * 1) + 0.5, // Обычная скорость
+            vx: (Math.random() - 0.5) * 3,
+            vy: (Math.random() * 1) + 0.5,
             radius: ballRadius,
             color: color,
             stuck: false,
@@ -243,17 +231,14 @@ class ChaosGenerator {
         document.getElementById('containerCount').textContent = this.ballsInContainer;
         document.getElementById('lineCount').textContent = this.lines.length;
         
-        // Обновляем таймер
         const minutes = Math.floor(this.timeLeft / 60);
         const seconds = Math.floor(this.timeLeft % 60);
         const timerElement = document.getElementById('timer') || this.createTimerElement();
         timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
-        // Обновляем счетчик максимальных шаров
         const maxBallsElement = document.getElementById('maxBalls') || this.createMaxBallsElement();
         maxBallsElement.textContent = `${this.ballsInContainer}/${this.maxBallsInContainer}`;
         
-        // Показываем статус игры
         if (this.gameOver) {
             const statusElement = document.getElementById('gameStatus') || this.createStatusElement();
             if (this.playerWon) {
@@ -272,7 +257,7 @@ class ChaosGenerator {
         timerElement.className = 'score-big';
         timerElement.style.color = '#00f6ff';
         
-        const panel = document.querySelector('.panel:has(h2:contains("Статистика"))');
+        const panel = document.querySelector('.panel:nth-child(3)');
         const firstScoreRow = panel.querySelector('.score-row');
         panel.insertBefore(timerElement, firstScoreRow);
         
@@ -285,7 +270,7 @@ class ChaosGenerator {
         maxBallsElement.className = 'score-big';
         maxBallsElement.style.color = '#ffcccb';
         
-        const panel = document.querySelector('.panel:has(h2:contains("Статистика"))');
+        const panel = document.querySelector('.panel:nth-child(3)');
         const containerCountRow = panel.querySelector('.score-row:nth-child(2)');
         panel.insertBefore(maxBallsElement, containerCountRow.nextSibling);
         
@@ -303,7 +288,7 @@ class ChaosGenerator {
         statusElement.style.borderRadius = '8px';
         statusElement.style.background = 'rgba(255,255,255,0.05)';
         
-        const panel = document.querySelector('.panel:has(h2:contains("Статистика"))');
+        const panel = document.querySelector('.panel:nth-child(3)');
         panel.appendChild(statusElement);
         
         return statusElement;
@@ -320,7 +305,6 @@ class ChaosGenerator {
     updatePhysics() {
         const currentTime = Date.now();
         
-        // Добавляем новые шары с ускоренным интервалом
         if (this.isRunning && 
             this.balls.length < this.maxBalls && 
             currentTime - this.lastBallSpawnTime > this.ballSpawnInterval) {
@@ -328,13 +312,12 @@ class ChaosGenerator {
             this.lastBallSpawnTime = currentTime;
         }
         
-        // Обновляем таймер
         if (this.gameStarted && !this.gameOver) {
-            this.timeLeft -= 1/60; // Уменьшаем на 1/60 секунды за кадр (60 FPS)
+            this.timeLeft -= 1/60;
             
             if (this.timeLeft <= 0) {
                 this.timeLeft = 0;
-                this.endGame(true); // Победа по времени
+                this.endGame(true);
                 return;
             }
         }
@@ -350,30 +333,24 @@ class ChaosGenerator {
 
             if (ball.stuck) return;
 
-            // Apply gravity
-            ball.vy += 0.05; // Обычная гравитация
+            ball.vy += 0.05;
 
-            // Сохраняем старую позицию для проверки столкновений
             const oldX = ball.x;
             const oldY = ball.y;
 
-            // Update position
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Check container collision
             if (this.checkContainerCollision(ball)) {
                 ball.inContainer = true;
                 this.ballsInContainer++;
                 
-                // Проверяем условие поражения
                 if (this.ballsInContainer >= this.maxBallsInContainer && !this.gameOver) {
-                    this.endGame(false); // Поражение при достижении лимита
+                    this.endGame(false);
                     return;
                 }
             }
 
-            // Проверяем столкновения с линиями
             let collided = false;
             for (const line of this.lines) {
                 for (let i = 0; i < line.points.length - 1; i++) {
@@ -383,15 +360,12 @@ class ChaosGenerator {
                     if (this.lineCircleCollision(p1, p2, ball)) {
                         this.handleCollision(ball, p1, p2);
                         collided = true;
-                        
-                        // Предотвращаем прохождение через линию
                         this.preventLinePenetration(ball, p1, p2, oldX, oldY);
                     }
                 }
                 if (collided) break;
             }
 
-            // Wall collisions
             const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
             const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
             
@@ -419,22 +393,17 @@ class ChaosGenerator {
         
         if (length === 0) return;
         
-        // Вычисляем нормаль к линии
         const normal = { x: -dy / length, y: dx / length };
         
-        // Вычисляем расстояние от шара до линии
         const distance = this.pointToLineDistance(ball.x, ball.y, p1.x, p1.y, p2.x, p2.y);
         
-        // Если шар проник за линию, выталкиваем его обратно
         if (distance < ball.radius) {
-            const pushDistance = ball.radius - distance + 0.1; // Небольшой запас
+            const pushDistance = ball.radius - distance + 0.1;
             ball.x += normal.x * pushDistance;
             ball.y += normal.y * pushDistance;
             
-            // Корректируем позицию, возвращая к старой позиции если нужно
             const newDistance = this.pointToLineDistance(ball.x, ball.y, p1.x, p1.y, p2.x, p2.y);
             if (newDistance < ball.radius) {
-                // Если все еще внутри линии, возвращаем к старой позиции
                 ball.x = oldX;
                 ball.y = oldY;
             }
@@ -499,7 +468,7 @@ class ChaosGenerator {
         
         const distance = Math.sqrt((circle.x - closestX) ** 2 + (circle.y - closestY) ** 2);
         
-        return distance <= circle.radius + 1; // Небольшой запас для надежности
+        return distance <= circle.radius + 1;
     }
 
     pointOnLineSegment(p1, p2, point) {
@@ -522,11 +491,9 @@ class ChaosGenerator {
 
         const dot = ball.vx * normal.x + ball.vy * normal.y;
         
-        // Все шары просто отскакивают
         ball.vx = ball.vx - 2 * dot * normal.x;
         ball.vy = ball.vy - 2 * dot * normal.y;
         
-        // Добавляем небольшое затухание
         ball.vx *= 0.95;
         ball.vy *= 0.95;
     }
@@ -544,7 +511,6 @@ class ChaosGenerator {
         this.render();
         this.updateUI();
         
-        // Показываем сообщение о результате игры
         setTimeout(() => {
             if (playerWon) {
                 alert('🎉 ПОБЕДА! Вы защитили контейнер!');
@@ -558,11 +524,9 @@ class ChaosGenerator {
         const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
         const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
         
-        // Clear canvas
         this.ctx.fillStyle = 'rgba(5, 7, 19, 0.95)';
         this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // Draw container with warning color if много шаров
         const containerColor = this.ballsInContainer > this.maxBallsInContainer * 0.7 ? 
             'rgba(255, 111, 97, 0.3)' : 'rgba(0, 246, 255, 0.15)';
         const borderColor = this.ballsInContainer > this.maxBallsInContainer * 0.7 ? 
@@ -574,7 +538,6 @@ class ChaosGenerator {
         this.ctx.fillRect(this.container.x, this.container.y, this.container.width, this.container.height);
         this.ctx.strokeRect(this.container.x, this.container.y, this.container.width, this.container.height);
         
-        // Draw container label
         this.ctx.fillStyle = borderColor;
         this.ctx.font = this.isMobile() ? '10px Inter' : '12px Inter';
         this.ctx.textAlign = 'center';
@@ -585,7 +548,6 @@ class ChaosGenerator {
             this.container.y + this.container.height / 2
         );
 
-        // Draw lines
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
@@ -600,7 +562,6 @@ class ChaosGenerator {
             this.ctx.stroke();
         });
 
-        // Draw current line being drawn
         if (this.currentLine && this.currentLine.points.length > 1) {
             this.ctx.beginPath();
             this.ctx.moveTo(this.currentLine.points[0].x, this.currentLine.points[0].y);
@@ -612,7 +573,6 @@ class ChaosGenerator {
             this.ctx.stroke();
         }
 
-        // Draw balls
         this.balls.forEach(ball => {
             this.ctx.beginPath();
             this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
@@ -628,7 +588,6 @@ class ChaosGenerator {
             }
         });
 
-        // Draw game over message
         if (this.gameOver) {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -664,7 +623,6 @@ class ChaosGenerator {
     }
 }
 
-// Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('gameCanvas');
     const game = new ChaosGenerator(canvas);

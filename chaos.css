@@ -156,7 +156,6 @@ h1 {
   cursor: crosshair;
   touch-action: none;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  /* Убираем сглаживание для четкой графики */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -moz-crisp-edges;
   image-rendering: -o-crisp-edges;
@@ -239,7 +238,7 @@ h1 {
 
 .ball-types {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
   margin-top: 10px;
 }
@@ -287,10 +286,6 @@ h1 {
   text-align: center;
 }
 
-.mobile-controls {
-  display: none;
-}
-
 footer {
   grid-column: 1/-1;
   text-align: center;
@@ -306,6 +301,15 @@ footer a {
 
 footer a:hover {
   text-decoration: underline;
+}
+
+/* Стили для новых элементов статистики */
+.score-row:nth-child(3) .score-big {
+  color: #ffcccb !important;
+}
+
+.score-row:nth-child(4) .score-big {
+  color: #00f6ff !important;
 }
 
 /* Мобильная адаптация */
@@ -362,17 +366,12 @@ footer a:hover {
     width: 100% !important;
     max-height: none;
     border-radius: 8px;
-    /* Увеличиваем четкость на мобильных */
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
 
   .ui {
     order: 2;
-  }
-
-  .mobile-controls {
-    display: block;
   }
 
   .controls {
@@ -408,6 +407,11 @@ footer a:hover {
 
   .ball-label {
     font-size: 11px;
+  }
+
+  .goal-text {
+    font-size: 10px;
+    padding: 0 2px;
   }
 }
 
@@ -453,8 +457,7 @@ footer a:hover {
   }
 
   .goal-text {
-    font-size: 10px;
-    padding: 0 4px;
+    font-size: 9px;
   }
 }
 
@@ -505,35 +508,7 @@ footer a:hover {
     top: 4px;
   }
   
-  .mobile-controls {
-    display: none;
-  }
-  
   .ball-types {
     grid-template-columns: 1fr;
-  }
-}
-/* Добавьте эти стили в конец файла chaos.css */
-
-/* Стили для новых элементов статистики */
-.score-row:nth-child(3) .score-big {
-  color: #ffcccb !important;
-}
-
-.score-row:nth-child(4) .score-big {
-  color: #00f6ff !important;
-}
-
-/* Адаптация для мобильных */
-@media (max-width: 820px) {
-  .goal-text {
-    font-size: 10px;
-    padding: 0 2px;
-  }
-}
-
-@media (max-width: 480px) {
-  .goal-text {
-    font-size: 9px;
   }
 }
