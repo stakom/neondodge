@@ -5,28 +5,53 @@
   const bestEl = document.getElementById('best');
   const restartBtn = document.getElementById('restartBtn');
 
-  // === БЛОКИРОВКА СВАЙПОВ ДЛЯ TELEGRAM ===
-  function isTelegramWebView() {
-    return /Telegram|Twitter|Facebook/.test(navigator.userAgent) || 
-           window.TelegramWebviewProxy !== undefined;
-  }
-
-  function preventDefaultSwipe(e) {
-    if (e.target === canvas || canvas.contains(e.target)) {
+  // === АГРЕССИВНАЯ БЛОКИРОВКА СВАЙПОВ ДЛЯ TELEGRAM ===
+  function blockAllSwipes(e) {
+    // Блокируем ВСЕ свайпы на всей странице в Telegram
+    if (navigator.userAgent.includes('Telegram')) {
       e.preventDefault();
       e.stopPropagation();
-      return false;
+      e.stopImmediatePropagation();
+      
+      // Особенно агрессивно блокируем touchmove
+      if (e.type === 'touchmove') {
+        return false;
+      }
     }
   }
 
-  // Блокируем свайпы только в Telegram WebView
-  if (isTelegramWebView()) {
-    document.addEventListener('touchstart', preventDefaultSwipe, { passive: false });
-    document.addEventListener('touchmove', preventDefaultSwipe, { passive: false });
-    document.addEventListener('touchend', preventDefaultSwipe, { passive: false });
-    
-    console.log('Telegram WebView detected: swipe gestures blocked');
-  }
+  // Блокируем все возможные события свайпов
+  const events = [
+    'touchstart', 'touchmove', 'touchend', 'touchcancel',
+    'gesturestart', 'gesturechange', 'gestureend',
+    'scroll', 'wheel'
+  ];
+
+  events.forEach(event => {
+    document.addEventListener(event, blockAllSwipes, { 
+      passive: false,
+      capture: true 
+    });
+    window.addEventListener(event, blockAllSwipes, { 
+      passive: false,
+      capture: true 
+    });
+  });
+
+  // Дополнительная блокировка для body и html
+  document.body.style.overscrollBehavior = 'none';
+  document.body.style.webkitOverflowScrolling = 'none';
+  document.documentElement.style.overscrollBehavior = 'none';
+  document.documentElement.style.webkitOverflowScrolling = 'none';
+
+  // Блокируем контекстное меню
+  document.addEventListener('contextmenu', (e) => {
+    if (navigator.userAgent.includes('Telegram')) {
+      e.preventDefault();
+    }
+  });
+
+  console.log('Aggressive swipe blocking enabled for Telegram');
   // === КОНЕЦ БЛОКИРОВКИ СВАЙПОВ ===
 
   const SIZE = 4;
@@ -41,6 +66,9 @@
   // --- Web Audio (мягкие звуки) ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playClick() {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "square";
@@ -52,6 +80,9 @@
     osc.stop(audioCtx.currentTime + 0.05);
   }
   function playMerge() {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
@@ -64,6 +95,9 @@
     osc.stop(audioCtx.currentTime + 0.25);
   }
   function playSpawn() {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "triangle";
@@ -82,7 +116,7 @@
       this.value = value;
       this.prevX = x;
       this.prevY = y;
-      this.scale = isNew ? 0.5 : 1; // поп-ап эффект
+      this.scale = isNew ? 0.5 : 1;
       this.moving = false;
     }
   }
@@ -159,11 +193,9 @@
         ctx.fillRect(drawX, drawY, CELL_SIZE, CELL_SIZE);
 
         if (tile) {
-          // анимация плавного перемещения
           tile.prevX += (tile.x - tile.prevX) * 0.3;
           tile.prevY += (tile.y - tile.prevY) * 0.3;
 
-          // анимация появления
           if (tile.scale < 1) tile.scale += 0.1;
           if (tile.scale > 1) tile.scale = 1;
 
@@ -235,7 +267,6 @@
 
     if (moved) {
       playClick();
-      // обновляем позиции
       for (let y = 0; y < SIZE; y++) {
         for (let x = 0; x < SIZE; x++) {
           if (restored[y][x]) {
@@ -286,13 +317,36 @@
   });
 
   let touchStartX = 0, touchStartY = 0;
+  let isSwiping = false;
+
   canvas.addEventListener('touchstart', e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  });
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isSwiping = true;
+    }
+  }, { passive: true });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!isSwiping || e.touches.length !== 1) return;
+    
+    // Блокируем только если это явно игровой свайп
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    
+    // Если свайп достаточно большой, блокируем стандартное поведение
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
   canvas.addEventListener('touchend', e => {
+    if (!isSwiping) return;
+    
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
+    
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
       if (dx > 0) move('right');
       else move('left');
@@ -300,10 +354,15 @@
       if (dy > 0) move('down');
       else move('up');
     }
-  });
+    
+    isSwiping = false;
+  }, { passive: true });
 
   restartBtn.addEventListener('click', init);
   window.addEventListener('resize', resizeCanvas);
+
+  // Автоматический ресайз при загрузке
+  window.addEventListener('load', resizeCanvas);
 
   init();
 })();
