@@ -16,7 +16,7 @@
       </div>
       <div>
         <h1>Генератор Хаоса</h1>
-        <div class="subtitle muted">Создавайте конструкции, направляйте шары в контейнер</div>
+        <div class="subtitle muted">Защитите контейнер от шаров! Игра длится 200 секунд</div>
       </div>
     </header>
     
@@ -27,41 +27,51 @@
     <div class="ui">
       <div class="panel">
         <h2>Управление</h2>
-        <div class="muted">Рисуйте линии, кликая и перетаскивая</div>
+        <div class="muted">Рисуйте линии, чтобы защитить контейнер внизу</div>
         <div class="controls">
-          <button id="btnStart" class="btn primary">▶ Запустить шары</button>
+          <button id="btnStart" class="btn primary">▶ Начать игру</button>
           <button id="btnClear" class="btn">🗑️ Очистить</button>
           <a href="index.html"><button class="btn">↩ В меню</button></a>
         </div>
         <div class="goal-panel">
-          <div class="goal-text">🎯 Цель: направить шары в синий контейнер внизу</div>
+          <div class="goal-text">🎯 Цель: не допустить попадания более 150 шаров в контейнер за 200 секунд</div>
         </div>
       </div>
       
       <div class="panel">
-        <h2>Типы шаров</h2>
+        <h2>Разноцветные шары</h2>
+        <div class="muted">Все шары одинаково отскакивают от линий</div>
         <div class="ball-types">
           <div class="ball-type">
             <div class="ball-preview ball-red"></div>
-            <span class="ball-label">Красные - отскакивают</span>
+            <span class="ball-label">Красные шары</span>
           </div>
           <div class="ball-type">
             <div class="ball-preview ball-blue"></div>
-            <span class="ball-label">Синие - прилипают</span>
+            <span class="ball-label">Синие шары</span>
           </div>
           <div class="ball-type">
             <div class="ball-preview ball-green"></div>
-            <span class="ball-label">Зеленые - делятся</span>
+            <span class="ball-label">Зеленые шары</span>
           </div>
           <div class="ball-type">
             <div class="ball-preview ball-purple"></div>
-            <span class="ball-label">Фиолетовые - ускоряются</span>
+            <span class="ball-label">Фиолетовые шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview" style="background: #ffd166; box-shadow: 0 0 8px #ffd166"></div>
+            <span class="ball-label">Желтые шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview" style="background: #06d6a0; box-shadow: 0 0 8px #06d6a0"></div>
+            <span class="ball-label">Бирюзовые</span>
           </div>
         </div>
       </div>
       
       <div class="panel">
         <h2>Статистика</h2>
+        <!-- Таймер и счетчики будут добавлены динамически -->
         <div class="score-row">
           <span class="muted">Активных шаров</span>
           <span class="score-big" id="ballCount">0</span>
@@ -69,6 +79,14 @@
         <div class="score-row">
           <span class="muted">Шаров в контейнере</span>
           <span class="score-big" id="containerCount">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Лимит контейнера</span>
+          <span class="score-big" id="maxBalls">0/150</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Оставшееся время</span>
+          <span class="score-big" id="timer">3:20</span>
         </div>
         <div class="score-row">
           <span class="muted">Линий нарисовано</span>

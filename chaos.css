@@ -513,3 +513,27 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
 }
+/* Добавьте эти стили в конец файла chaos.css */
+
+/* Стили для новых элементов статистики */
+.score-row:nth-child(3) .score-big {
+  color: #ffcccb !important;
+}
+
+.score-row:nth-child(4) .score-big {
+  color: #00f6ff !important;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 820px) {
+  .goal-text {
+    font-size: 10px;
+    padding: 0 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-text {
+    font-size: 9px;
+  }
+}
