@@ -101,6 +101,8 @@ h1 {
 .game-area {
   position: relative;
   grid-column: 1;
+  display: flex;
+  gap: 10px;
 }
 
 canvas {
@@ -113,14 +115,15 @@ canvas {
   min-height: 400px;
   position: relative;
   z-index: 1;
+  flex: 1;
 }
 
-/* Мобильный оверлей с счётом и следующей фигурой */
+/* Мобильный оверлей - теперь справа от игрового поля */
 .mobile-overlay {
   display: none;
-  position: absolute;
-  top: 15px;
-  right: 15px;
+  flex-direction: column;
+  width: 100px;
+  gap: 10px;
   z-index: 5;
 }
 
@@ -130,20 +133,22 @@ canvas {
   padding: 12px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
-  min-width: 100px;
+  text-align: center;
 }
 
 .mobile-score-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .mobile-next {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background: rgba(0,0,0,0.7);
+  border-radius: 10px;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
 }
 
 #mobileNextCanvas {
@@ -323,7 +328,8 @@ footer a:hover {
   
   .game-area {
     grid-column: 1;
-    min-height: 75vh; /* Увеличиваем высоту игрового поля */
+    min-height: 75vh;
+    flex-direction: column;
   }
   
   .ui {
@@ -346,16 +352,29 @@ footer a:hover {
   }
   
   canvas {
-    min-height: 65vh; /* Увеличиваем высоту canvas на мобильных */
+    min-height: 60vh;
     width: 100% !important;
+    order: 1;
   }
   
   .mobile-overlay {
-    display: block; /* Показываем мобильный оверлей */
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    order: 2;
+    margin-top: 10px;
+  }
+  
+  .mobile-score,
+  .mobile-next {
+    flex: 1;
+    max-width: 48%;
   }
   
   .mobile-controls {
-    display: block; /* Показываем кнопки на мобильных */
+    display: block;
+    order: 3;
   }
   
   .panel h2 {
@@ -382,7 +401,7 @@ footer a:hover {
 
 @media (max-width: 480px) {
   canvas {
-    min-height: 60vh; /* Ещё больше увеличиваем на маленьких экранах */
+    min-height: 55vh;
   }
   
   h1 {
@@ -411,13 +430,12 @@ footer a:hover {
   }
   
   .mobile-overlay {
-    top: 10px;
-    right: 10px;
+    margin-top: 8px;
   }
   
-  .mobile-score {
+  .mobile-score,
+  .mobile-next {
     padding: 10px;
-    min-width: 90px;
   }
   
   #mobileNextCanvas {
@@ -442,7 +460,7 @@ footer a:hover {
   }
   
   canvas {
-    min-height: 60vh;
+    min-height: 55vh;
   }
 }
 
@@ -455,10 +473,28 @@ footer a:hover {
   
   .game-area {
     min-height: 85vh;
+    flex-direction: row;
+    align-items: flex-start;
   }
   
   canvas {
     min-height: 75vh;
+    order: 1;
+    flex: 1;
+  }
+  
+  .mobile-overlay {
+    display: flex;
+    flex-direction: column;
+    width: 100px;
+    order: 2;
+    margin-top: 0;
+    margin-left: 10px;
+  }
+  
+  .mobile-score,
+  .mobile-next {
+    max-width: 100%;
   }
   
   .mobile-controls {
@@ -471,14 +507,9 @@ footer a:hover {
     font-size: 22px;
   }
   
-  .mobile-overlay {
-    top: 10px;
-    right: 10px;
-  }
-  
-  .mobile-score {
+  .mobile-score,
+  .mobile-next {
     padding: 8px;
-    min-width: 80px;
   }
   
   #mobileNextCanvas {
