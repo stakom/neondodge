@@ -12,7 +12,7 @@ class ChaosGenerator {
             x: 0,
             y: 0,
             width: 0,
-            height: 30
+            height: 25
         };
         this.ballsInContainer = 0;
         this.maxBalls = 1000;
@@ -27,6 +27,12 @@ class ChaosGenerator {
         this.playerWon = false;
         this.lastBallSpawnTime = 0;
         this.ballSpawnInterval = 200;
+        
+        // Система чернил - уменьшена в 5 раз
+        this.maxInk = 200;
+        this.currentInk = this.maxInk;
+        this.inkCostPerPixel = 0.5;
+        this.inkDepleted = false; // Флаг окончания чернил
         
         this.setupEventListeners();
         this.resizeCanvas();
@@ -95,13 +101,20 @@ class ChaosGenerator {
         const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
         const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
         
-        this.container.width = canvasWidth * 0.5;
+        this.container.width = canvasWidth * 0.33;
         this.container.x = (canvasWidth - this.container.width) / 2;
         this.container.y = canvasHeight - this.container.height - 10;
     }
 
     startDrawing(e) {
-        if (this.gameOver) return;
+        // Блокировка рисования при окончании чернил
+        if (this.gameOver || this.currentInk <= 0 || this.inkDepleted) {
+            if (this.currentInk <= 0 && !this.inkDepleted) {
+                this.inkDepleted = true;
+            }
+            return;
+        }
+        
         this.isDrawing = true;
         const pos = this.getMousePos(e);
         this.currentLine = {
@@ -112,11 +125,31 @@ class ChaosGenerator {
     }
 
     draw(e) {
-        if (!this.isDrawing || !this.currentLine || this.gameOver) return;
+        // Блокировка рисования при окончании чернил
+        if (!this.isDrawing || !this.currentLine || this.gameOver || this.currentInk <= 0 || this.inkDepleted) {
+            if (this.currentInk <= 0 && !this.inkDepleted) {
+                this.inkDepleted = true;
+            }
+            return;
+        }
         
         const pos = this.getMousePos(e);
-        this.currentLine.points.push(pos);
-        this.render();
+        const lastPoint = this.currentLine.points[this.currentLine.points.length - 1];
+        const distance = Math.sqrt(Math.pow(pos.x - lastPoint.x, 2) + Math.pow(pos.y - lastPoint.y, 2));
+        const inkCost = distance * this.inkCostPerPixel;
+        
+        if (this.currentInk >= inkCost) {
+            this.currentLine.points.push(pos);
+            this.currentInk -= inkCost;
+            this.updateInkIndicator();
+            this.render();
+        } else {
+            // Чернила закончились во время рисования
+            this.currentInk = 0;
+            this.inkDepleted = true;
+            this.updateInkIndicator();
+            this.stopDrawing();
+        }
     }
 
     stopDrawing() {
@@ -130,7 +163,12 @@ class ChaosGenerator {
     }
 
     handleTouchStart(e) {
-        if (this.gameOver) return;
+        if (this.gameOver || this.currentInk <= 0 || this.inkDepleted) {
+            if (this.currentInk <= 0 && !this.inkDepleted) {
+                this.inkDepleted = true;
+            }
+            return;
+        }
         e.preventDefault();
         this.startDrawing(e.touches[0]);
     }
@@ -171,6 +209,8 @@ class ChaosGenerator {
         this.ballsInContainer = 0;
         this.timeLeft = this.gameTime;
         this.balls = [];
+        // НЕ восстанавливаем чернила при начале игры, только при очистке
+        this.inkDepleted = this.currentInk <= 0; // Обновляем флаг окончания чернил
         
         for (let i = 0; i < 15; i++) {
             this.addRandomBall();
@@ -189,6 +229,9 @@ class ChaosGenerator {
         const spawnAreaTop = canvasHeight * 0.3;
         const ballRadius = this.isMobile() ? 5 : 6;
         
+        // Случайная прыгучесть для каждого шара (от 0.7 до 1.3)
+        const bounciness = 0.7 + Math.random() * 0.6;
+        
         this.balls.push({
             x: Math.random() * (this.canvas.width / (window.devicePixelRatio || 1)),
             y: Math.random() * spawnAreaTop,
@@ -198,13 +241,25 @@ class ChaosGenerator {
             color: color,
             stuck: false,
             stuckTo: null,
-            inContainer: false
+            inContainer: false,
+            bounciness: bounciness // Добавляем параметр прыгучести
         });
     }
 
     undoLastLine() {
         if (this.lines.length > 0 && !this.gameOver) {
-            this.lines.pop();
+            // Возвращаем часть чернил при удалении линии
+            const removedLine = this.lines.pop();
+            let lineLength = 0;
+            for (let i = 0; i < removedLine.points.length - 1; i++) {
+                const p1 = removedLine.points[i];
+                const p2 = removedLine.points[i + 1];
+                lineLength += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            }
+            this.currentInk = Math.min(this.maxInk, this.currentInk + lineLength * this.inkCostPerPixel * 0.8);
+            this.inkDepleted = false; // Сбрасываем флаг, если чернила вернулись
+            this.updateInkIndicator();
+            
             document.getElementById('lineCount').textContent = this.lines.length;
             this.render();
         }
@@ -218,12 +273,60 @@ class ChaosGenerator {
         this.gameStarted = false;
         this.gameOver = false;
         this.timeLeft = this.gameTime;
+        this.currentInk = this.maxInk; // Восстанавливаем чернила только при полной очистке
+        this.inkDepleted = false; // Сбрасываем флаг окончания чернил
+        this.updateInkIndicator();
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
         }
         this.updateUI();
         this.render();
+    }
+
+    updateInkIndicator() {
+        const inkPercent = (this.currentInk / this.maxInk) * 100;
+        
+        // Обновляем десктопный индикатор
+        const inkFill = document.getElementById('inkFill');
+        const inkPercentElement = document.getElementById('inkPercent');
+        
+        if (inkFill) {
+            inkFill.style.width = `${inkPercent}%`;
+            if (inkPercent < 20) {
+                inkFill.classList.add('low');
+            } else {
+                inkFill.classList.remove('low');
+            }
+        }
+        
+        if (inkPercentElement) {
+            inkPercentElement.textContent = `${Math.floor(inkPercent)}%`;
+        }
+        
+        // Обновляем мобильный индикатор
+        const mobileInkFill = document.getElementById('mobileInkFill');
+        const mobileInkPercent = document.getElementById('mobileInkPercent');
+        
+        if (mobileInkFill) {
+            mobileInkFill.style.width = `${inkPercent}%`;
+            if (inkPercent < 20) {
+                mobileInkFill.classList.add('low');
+            } else {
+                mobileInkFill.classList.remove('low');
+            }
+        }
+        
+        if (mobileInkPercent) {
+            mobileInkPercent.textContent = `${Math.floor(inkPercent)}%`;
+        }
+        
+        // Меняем курсор при окончании чернил
+        if (this.currentInk <= 0) {
+            this.canvas.style.cursor = 'not-allowed';
+        } else {
+            this.canvas.style.cursor = 'crosshair';
+        }
     }
 
     updateUI() {
@@ -238,6 +341,13 @@ class ChaosGenerator {
         
         const maxBallsElement = document.getElementById('maxBalls') || this.createMaxBallsElement();
         maxBallsElement.textContent = `${this.ballsInContainer}/${this.maxBallsInContainer}`;
+        
+        // Обновление отображения чернил
+        const inkElement = document.getElementById('inkLevel') || this.createInkElement();
+        inkElement.textContent = `${Math.floor(this.currentInk)}/${this.maxInk}`;
+        inkElement.style.color = this.currentInk < this.maxInk * 0.2 ? '#ff6f61' : '#00f6ff';
+        
+        this.updateInkIndicator();
         
         if (this.gameOver) {
             const statusElement = document.getElementById('gameStatus') || this.createStatusElement();
@@ -275,6 +385,23 @@ class ChaosGenerator {
         panel.insertBefore(maxBallsElement, containerCountRow.nextSibling);
         
         return maxBallsElement;
+    }
+
+    createInkElement() {
+        const inkElement = document.createElement('div');
+        inkElement.id = 'inkLevel';
+        inkElement.className = 'score-big';
+        inkElement.style.color = '#00f6ff';
+        
+        const panel = document.querySelector('.panel:nth-child(3)');
+        const lineCountRow = panel.querySelector('.score-row:nth-child(4)');
+        const newRow = document.createElement('div');
+        newRow.className = 'score-row ink-mobile';
+        newRow.innerHTML = '<span class="muted">Чернила</span>';
+        newRow.appendChild(inkElement);
+        panel.insertBefore(newRow, lineCountRow.nextSibling);
+        
+        return inkElement;
     }
 
     createStatusElement() {
@@ -369,18 +496,19 @@ class ChaosGenerator {
             const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
             const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
             
+            // Используем прыгучесть при отскоках от стен
             if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvasWidth) {
-                ball.vx *= -0.8;
+                ball.vx *= -0.8 * ball.bounciness; // Учитываем прыгучесть
                 ball.x = Math.max(ball.radius, Math.min(canvasWidth - ball.radius, ball.x));
             }
             
             if (ball.y - ball.radius < 0) {
-                ball.vy *= -0.8;
+                ball.vy *= -0.8 * ball.bounciness; // Учитываем прыгучесть
                 ball.y = ball.radius;
             }
             
             if (ball.y + ball.radius > canvasHeight && !ball.inContainer) {
-                ball.vy *= -0.7;
+                ball.vy *= -0.7 * ball.bounciness; // Учитываем прыгучесть
                 ball.y = canvasHeight - ball.radius;
             }
         });
@@ -491,11 +619,14 @@ class ChaosGenerator {
 
         const dot = ball.vx * normal.x + ball.vy * normal.y;
         
+        // Учитываем прыгучесть при отскоке от линий
+        const bounceFactor = 0.95 * ball.bounciness;
+        
         ball.vx = ball.vx - 2 * dot * normal.x;
         ball.vy = ball.vy - 2 * dot * normal.y;
         
-        ball.vx *= 0.95;
-        ball.vy *= 0.95;
+        ball.vx *= bounceFactor;
+        ball.vy *= bounceFactor;
     }
 
     endGame(playerWon) {
@@ -633,6 +764,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('btnClear').addEventListener('click', () => {
         game.clearAll();
+    });
+    
+    // Добавляем возможность отмены последней линии по Ctrl+Z
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+            e.preventDefault();
+            game.undoLastLine();
+        }
     });
     
     game.render();

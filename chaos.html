@@ -24,6 +24,19 @@
       <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
     
+    <!-- Мобильный индикатор чернил под игровым полем -->
+    <div class="mobile-ink-container" id="mobileInkContainer">
+      <div class="mobile-ink-indicator">
+        <div class="mobile-ink-label">
+          <span>🖌️ Чернила:</span>
+          <span id="mobileInkPercent">100%</span>
+        </div>
+        <div class="mobile-ink-bar">
+          <div class="mobile-ink-fill" id="mobileInkFill"></div>
+        </div>
+      </div>
+    </div>
+    
     <div class="ui">
       <div class="panel">
         <h2>Управление</h2>
@@ -32,6 +45,15 @@
           <button id="btnStart" class="btn primary">▶ Начать игру</button>
           <button id="btnClear" class="btn">🗑️ Очистить</button>
           <a href="index.html"><button class="btn">↩ В меню</button></a>
+        </div>
+        <div class="ink-indicator">
+          <div class="ink-label">
+            <span>🖌️ Чернила:</span>
+            <span id="inkPercent">100%</span>
+          </div>
+          <div class="ink-bar">
+            <div class="ink-fill" id="inkFill"></div>
+          </div>
         </div>
         <div class="goal-panel">
           <div class="goal-text">🎯 Цель: не допустить попадания более 150 шаров в контейнер за 200 секунд</div>
@@ -90,6 +112,10 @@
         <div class="score-row">
           <span class="muted">Линий нарисовано</span>
           <span class="score-big" id="lineCount">0</span>
+        </div>
+        <div class="score-row ink-mobile">
+          <span class="muted">Чернила</span>
+          <span class="score-big" id="inkLevel">200/200</span>
         </div>
       </div>
     </div>

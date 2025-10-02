@@ -22,7 +22,7 @@
 
   // Время и интервалы
   let dropTime = 0;
-  let dropInterval = 1000; // 1 секунда
+  let dropInterval = 1000;
   let lastTime = 0;
   
   // Анимации и частицы
@@ -31,7 +31,7 @@
   
   // Защита от повторного нажатия мгновенного спуска
   let dropCooldown = false;
-  const DROP_COOLDOWN_TIME = 800; // Увеличил до 800ms
+  const DROP_COOLDOWN_TIME = 800;
   
   // Анимация мгновенного падения
   let hardDropAnimation = null;
@@ -134,10 +134,7 @@
   
   // Инициализация звуков
   function initSounds() {
-    // Простые звуки с помощью Web Audio API
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
       // Создаем простые бипы для звуков
       createBeepSound(523.25, 0.1); // Вращение
       createBeepSound(392.00, 0.05); // Движение
@@ -190,7 +187,6 @@
   function resize() {
     const rect = canvas.getBoundingClientRect();
     
-    // Уменьшаем высоту canvas на мобильных устройствах
     if (window.innerWidth <= 820) {
       const mobileHeight = Math.max(400, Math.floor(rect.width * 1.3 * DPR));
       canvas.width = Math.max(400, Math.floor(rect.width * DPR));
@@ -203,7 +199,6 @@
     W = canvas.width;
     H = canvas.height;
     
-    // Также обновляем размер nextCanvas с учетом DPR
     const nextRect = nextCanvas.getBoundingClientRect();
     nextCanvas.width = Math.floor(nextRect.width * DPR);
     nextCanvas.height = Math.floor(nextRect.height * DPR);
@@ -216,7 +211,6 @@
   
   canvas.style.width = '100%';
   
-  // Устанавливаем меньшую высоту для мобильных устройств
   if (window.innerWidth <= 820) {
     canvas.style.height = '65vh';
   } else {
@@ -229,15 +223,13 @@
   // Обновление макета
   function updateLayout() {
     if (window.innerWidth > 820) {
-      // Desktop - увеличенное игровое поле на 20%
-      leftX = W * 0.005; // Уменьшил отступ слева
-      gameWidth = W * 0.84; // Увеличил на 20% с 0.7
+      leftX = W * 0.005;
+      gameWidth = W * 0.84;
       topY = H * 0.02;
       gameHeight = H * 0.96;
     } else {
-      // Mobile - максимально используем пространство
-      leftX = W * 0.005; // Уменьшил отступ слева
-      gameWidth = W * 0.99; // Увеличил на 20% с 0.96
+      leftX = W * 0.005;
+      gameWidth = W * 0.99;
       topY = H * 0.02;
       gameHeight = H * 0.90;
     }
@@ -264,12 +256,10 @@
           const newX = x + c;
           const newY = y + r;
           
-          // Проверка границ
           if (newX < 0 || newX >= COLS || newY >= ROWS) {
             return true;
           }
           
-          // Проверка на другие блоки (кроме верхней границы)
           if (newY >= 0 && board[newY][newX] !== 0) {
             return true;
           }
@@ -288,7 +278,6 @@
           if (boardY >= 0) {
             board[boardY][currentPiece.x + c] = currentPiece.color;
             
-            // Анимация размещения
             animations.push({
               type: 'placement',
               x: currentPiece.x + c,
@@ -303,34 +292,29 @@
       }
     }
     
-    // Проверка заполненных линий
     const cleared = clearLines();
     if (cleared > 0) {
-      playSound(659.25, 0.3); // Звук линии
-      // Очки за линии
+      playSound(659.25, 0.3);
       const linePoints = [40, 100, 300, 1200];
       score += linePoints[cleared - 1] * level;
       lines += cleared;
       
-      // Обновление уровня
       level = Math.floor(lines / 10) + 1;
       dropInterval = Math.max(100, 1000 - (level - 1) * 100);
       
       updateScore();
     }
     
-    // Следующая фигура
     currentPiece = nextPiece;
     nextPiece = createPiece();
     
-    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверка на окончание игры ДОЛЖНА быть после установки новой фигуры
     if (collision(currentPiece, currentPiece.x, currentPiece.y)) {
       gameOver = true;
       running = false;
       btnStart.textContent = '▶ Старт';
       if (mobileBtnStart) mobileBtnStart.textContent = '▶ Старт';
       
-      playSound(220.00, 0.5); // Звук Game Over
+      playSound(220.00, 0.5);
       
       if (score > best) {
         best = score;
@@ -345,7 +329,6 @@
     let linesCleared = 0;
     for (let r = ROWS - 1; r >= 0; r--) {
       if (board[r].every(cell => cell !== 0)) {
-        // Анимация очистки
         for (let c = 0; c < COLS; c++) {
           animations.push({
             type: 'clear',
@@ -357,7 +340,6 @@
             alpha: 1
           });
           
-          // Частицы
           spawnParticles(
             leftX + (c + 0.5) * (gameWidth / COLS),
             topY + (r + 0.5) * (gameHeight / ROWS),
@@ -367,11 +349,10 @@
           );
         }
         
-        // Удаление линии
         board.splice(r, 1);
         board.unshift(Array(COLS).fill(0));
         linesCleared++;
-        r++; // Проверить ту же строку снова
+        r++;
       }
     }
     return linesCleared;
@@ -383,7 +364,7 @@
       particles.push({
         x, y,
         vx: (Math.random() * 2 - 1) * spread,
-        vy: (Math.random() * 2 - 1.5) * spread, // Больше вверх
+        vy: (Math.random() * 2 - 1.5) * spread,
         life: rand(0.6, 1.2),
         age: 0,
         size: rand(3, 6),
@@ -423,13 +404,12 @@
       pa.age += dt;
       pa.x += pa.vx;
       pa.y += pa.vy;
-      pa.vy += 0.3 * dt; // Увеличил гравитацию
+      pa.vy += 0.3 * dt;
       if (pa.age >= pa.life) {
         particles.splice(i, 1);
       }
     }
     
-    // Обновление анимации мгновенного падения
     if (hardDropAnimation) {
       hardDropAnimation.age += dt;
       if (hardDropAnimation.age >= hardDropAnimation.duration) {
@@ -445,10 +425,9 @@
     if (!collision(currentPiece, currentPiece.x + dx, currentPiece.y + dy)) {
       currentPiece.x += dx;
       currentPiece.y += dy;
-      if (dx !== 0) playSound(392.00, 0.05); // Звук движения
+      if (dx !== 0) playSound(392.00, 0.05);
     } else if (dy > 0) {
-      // Если движение вниз невозможно, размещаем фигуру
-      playSound(261.63, 0.2); // Звук падения
+      playSound(261.63, 0.2);
       placePiece();
     }
   }
@@ -459,7 +438,6 @@
     const rotated = [];
     const shape = currentPiece.shape;
     
-    // Транспонирование матрицы
     for (let c = 0; c < shape[0].length; c++) {
       rotated[c] = [];
       for (let r = 0; r < shape.length; r++) {
@@ -467,20 +445,17 @@
       }
     }
     
-    // Проверка столкновения после вращения
     if (!collision({ ...currentPiece, shape: rotated }, currentPiece.x, currentPiece.y)) {
       currentPiece.shape = rotated;
-      playSound(523.25, 0.1); // Звук вращения
+      playSound(523.25, 0.1);
     }
   }
   
   function hardDrop() {
     if (!currentPiece || !running || gameOver || paused || dropCooldown) return;
     
-    // Активируем защиту от повторного нажатия
     dropCooldown = true;
     
-    // Запускаем анимацию
     hardDropAnimation = {
       age: 0,
       duration: 0.3
@@ -492,7 +467,6 @@
       dropDistance++;
     }
     
-    // Визуальные эффекты для мгновенного падения
     for (let r = 0; r < currentPiece.shape.length; r++) {
       for (let c = 0; c < currentPiece.shape[r].length; c++) {
         if (currentPiece.shape[r][c] !== 0) {
@@ -507,10 +481,9 @@
       }
     }
     
-    playSound(261.63, 0.2); // Звук падения
+    playSound(261.63, 0.2);
     placePiece();
     
-    // Сбрасываем защиту через заданное время
     setTimeout(() => {
       dropCooldown = false;
     }, DROP_COOLDOWN_TIME);
@@ -573,7 +546,6 @@
       });
     }
     
-    // Обработчики для мобильных кнопок управления игрой
     if (mobileBtnStart) {
       mobileBtnStart.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -671,21 +643,18 @@
     }
   }
   
-  // Запуск игры - ИСПРАВЛЕННАЯ ВЕРСИЯ
+  // Запуск игры
   function startGame() {
-    // Если игра на паузе, снимаем паузу
     if (paused) {
       togglePause();
       return;
     }
     
-    // Если игра уже запущена, перезапускаем
     if (running) {
       resetGame();
       return;
     }
     
-    // Первый запуск игры
     resetGame();
     running = true;
     paused = false;
@@ -699,16 +668,14 @@
     render();
   }
   
-  // Сброс игры - ВАЖНАЯ ФУНКЦИЯ
+  // Сброс игры
   function resetGame() {
-    // Очистка поля
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         board[r][c] = 0;
       }
     }
     
-    // Сброс переменных
     score = 0;
     level = 1;
     lines = 0;
@@ -719,12 +686,10 @@
     dropInterval = 1000;
     dropCooldown = false;
     
-    // Очистка анимаций и частиц
     animations.length = 0;
     particles.length = 0;
     hardDropAnimation = null;
     
-    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Сначала создаем следующую фигуру, потом текущую
     nextPiece = createPiece();
     currentPiece = createPiece();
     
@@ -752,7 +717,6 @@
     const padding = cellSize * 0.1;
     const shape = nextPiece.shape;
     
-    // Центрируем фигуру
     const offsetX = (nextCanvas.width - shape[0].length * cellSize) / 2;
     const offsetY = (nextCanvas.height - shape.length * cellSize) / 2;
     
@@ -764,7 +728,6 @@
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c] !== 0) {
-          // Рисуем закругленные блоки как в основной игре
           nextCtx.beginPath();
           nextCtx.moveTo(offsetX + c * cellSize + padding + padding, offsetY + r * cellSize + padding);
           nextCtx.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, 
@@ -841,7 +804,6 @@
     
     // Рисование текущей фигуры
     if (currentPiece && running && !paused) {
-      // Анимация мгновенного падения
       if (hardDropAnimation) {
         const progress = hardDropAnimation.age / hardDropAnimation.duration;
         const alpha = 0.7 + 0.3 * Math.sin(progress * Math.PI * 4);
@@ -943,7 +905,7 @@
       ctx.restore();
     });
     
-    // Рисование Game Over - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    // Рисование Game Over
     if (gameOver) {
       ctx.save();
       ctx.fillStyle = 'rgba(2,6,10,0.8)';
