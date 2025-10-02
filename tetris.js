@@ -28,6 +28,10 @@
   const animations = [];
   const particles = [];
   
+  // Защита от повторного нажатия мгновенного спуска
+  let dropCooldown = false;
+  const DROP_COOLDOWN_TIME = 300; // 300ms защита
+  
   // Настройка canvas
   const canvas = document.getElementById('canvas');
   const nextCanvas = document.getElementById('nextCanvas');
@@ -464,12 +468,20 @@
   }
   
   function hardDrop() {
-    if (!currentPiece || !running || gameOver || paused) return;
+    if (!currentPiece || !running || gameOver || paused || dropCooldown) return;
+    
+    // Активируем защиту от повторного нажатия
+    dropCooldown = true;
     
     while (!collision(currentPiece, currentPiece.x, currentPiece.y + 1)) {
       currentPiece.y++;
     }
     placePiece();
+    
+    // Сбрасываем защиту через заданное время
+    setTimeout(() => {
+      dropCooldown = false;
+    }, DROP_COOLDOWN_TIME);
   }
   
   // Обработчики для мобильных кнопок
@@ -553,7 +565,7 @@
         break;
       case ' ':
         e.preventDefault();
-        if (!paused) {
+        if (!paused && !dropCooldown) {
           hardDrop();
         }
         break;
@@ -607,6 +619,7 @@
       gameOver = false;
       dropTime = 0;
       dropInterval = 1000;
+      dropCooldown = false; // Сбрасываем защиту
       
       // Создание фигур
       currentPiece = createPiece();
@@ -632,6 +645,7 @@
     paused = false;
     dropTime = 0;
     dropInterval = 1000;
+    dropCooldown = false; // Сбрасываем защиту
     
     // Создание фигур
     currentPiece = createPiece();
