@@ -125,8 +125,19 @@
   // Изменение размера canvas
   function resize() {
     const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(400, Math.floor(rect.width * DPR));
-    canvas.height = Math.max(600, Math.floor(rect.height * DPR));
+    
+    // Уменьшаем высоту canvas на мобильных устройствах
+    if (window.innerWidth <= 820) {
+      // На мобильных - оставляем больше места для кнопок
+      const mobileHeight = Math.max(400, Math.floor(rect.width * 1.2 * DPR)); // Уменьшил соотношение
+      canvas.width = Math.max(400, Math.floor(rect.width * DPR));
+      canvas.height = mobileHeight;
+    } else {
+      // На десктопе - обычная высота
+      canvas.width = Math.max(400, Math.floor(rect.width * DPR));
+      canvas.height = Math.max(600, Math.floor(rect.height * DPR));
+    }
+    
     W = canvas.width;
     H = canvas.height;
     
@@ -142,6 +153,14 @@
   }
   
   canvas.style.width = '100%';
+  
+  // Устанавливаем меньшую высоту для мобильных устройств
+  if (window.innerWidth <= 820) {
+    canvas.style.height = '65vh';
+  } else {
+    canvas.style.height = '70vh';
+  }
+  
   resize();
   window.addEventListener('resize', resize);
   
@@ -154,11 +173,11 @@
       topY = H * 0.02;
       gameHeight = H * 0.96;
     } else {
-      // Mobile - максимально используем пространство
+      // Mobile - максимально используем пространство, но оставляем место для кнопок
       leftX = W * 0.02;
       gameWidth = W * 0.96;
       topY = H * 0.02;
-      gameHeight = H * 0.96;
+      gameHeight = H * 0.90; // Уменьшил высоту игрового поля чтобы освободить место для кнопок
     }
   }
   
