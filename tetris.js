@@ -28,14 +28,6 @@
   const animations = [];
   const particles = [];
   
-  // Переменные для свайпового управления
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchStartTime = 0;
-  let isDragging = false;
-  const SWIPE_THRESHOLD = 30; // минимальное расстояние для свайпа
-  const TAP_THRESHOLD = 200; // максимальное время для тапа
-  
   // Настройка canvas
   const canvas = document.getElementById('canvas');
   const nextCanvas = document.getElementById('nextCanvas');
@@ -55,6 +47,12 @@
   const levelEl = document.getElementById('level');
   const linesEl = document.getElementById('lines');
   const bestEl = document.getElementById('best');
+  
+  // Кнопки мобильного управления
+  const btnLeft = document.getElementById('btnLeft');
+  const btnRight = document.getElementById('btnRight');
+  const btnDown = document.getElementById('btnDown');
+  const btnRotate = document.getElementById('btnRotate');
   
   if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl) {
     console.error('One or more UI elements not found!');
@@ -384,7 +382,54 @@
     placePiece();
   }
   
-  // Обработчики событий клавиатуры (для десктопа)
+  // Обработчики для мобильных кнопок
+  function setupMobileControls() {
+    if (btnLeft) {
+      btnLeft.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        movePiece(-1, 0);
+      });
+      btnLeft.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        movePiece(-1, 0);
+      });
+    }
+    
+    if (btnRight) {
+      btnRight.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        movePiece(1, 0);
+      });
+      btnRight.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        movePiece(1, 0);
+      });
+    }
+    
+    if (btnDown) {
+      btnDown.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        movePiece(0, 1);
+      });
+      btnDown.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        movePiece(0, 1);
+      });
+    }
+    
+    if (btnRotate) {
+      btnRotate.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        rotatePiece();
+      });
+      btnRotate.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        rotatePiece();
+      });
+    }
+  }
+  
+  // Обработчики событий клавиатуры
   document.addEventListener('keydown', e => {
     if (!running || gameOver) return;
     
@@ -419,72 +464,6 @@
         togglePause();
         break;
     }
-  });
-  
-  // Свайповое управление для мобильных устройств
-  canvas.addEventListener('touchstart', e => {
-    if (!running || gameOver) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-    touchStartTime = Date.now();
-    isDragging = true;
-  });
-  
-  canvas.addEventListener('touchmove', e => {
-    if (!isDragging || !running || gameOver) return;
-    e.preventDefault();
-    
-    const touch = e.touches[0];
-    const currentX = touch.clientX;
-    const currentY = touch.clientY;
-    
-    // Вычисляем смещение
-    const deltaX = currentX - touchStartX;
-    const deltaY = currentY - touchStartY;
-    
-    // Если смещение по X достаточно большое - перемещаем фигуру
-    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-      const direction = deltaX > 0 ? 1 : -1;
-      movePiece(direction, 0);
-      touchStartX = currentX; // Сбрасываем начальную позицию для непрерывного движения
-    }
-  });
-  
-  canvas.addEventListener('touchend', e => {
-    if (!isDragging || !running || gameOver) return;
-    e.preventDefault();
-    
-    const touch = e.changedTouches[0];
-    const endX = touch.clientX;
-    const endY = touch.clientY;
-    const endTime = Date.now();
-    
-    const deltaX = endX - touchStartX;
-    const deltaY = endY - touchStartY;
-    const deltaTime = endTime - touchStartTime;
-    
-    // Определяем тип жеста
-    if (Math.abs(deltaX) < SWIPE_THRESHOLD && Math.abs(deltaY) < SWIPE_THRESHOLD) {
-      // Тап - поворот фигуры
-      if (deltaTime < TAP_THRESHOLD) {
-        rotatePiece();
-      }
-    } else if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > SWIPE_THRESHOLD) {
-      // Свайп вниз - сброс фигуры
-      hardDrop();
-    }
-    
-    isDragging = false;
-  });
-  
-  // Клик мышью для десктопа
-  canvas.addEventListener('click', e => {
-    if (!running || gameOver) return;
-    e.preventDefault();
-    rotatePiece();
   });
   
   // Кнопки управления
@@ -822,6 +801,7 @@
   
   // Инициализация
   updateLayout();
+  setupMobileControls();
   render();
   gameLoop();
 })();
