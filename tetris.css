@@ -119,10 +119,10 @@ canvas {
 .mobile-controls {
   display: none;
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   left: 0;
   right: 0;
-  padding: 0 20px;
+  padding: 0 15px;
   z-index: 10;
 }
 
@@ -263,7 +263,7 @@ canvas {
 footer {
   grid-column: 1/-1;
   text-align: center;
-  padding: 16px 0;
+  padding: 16px 0 8px;
   color: var(--muted);
   font-size: 12px;
 }
@@ -297,12 +297,13 @@ footer a:hover {
     margin: 0;
     max-width: none;
     width: 100vw;
-    gap: 0;
+    gap: 5px;
   }
   
   .game-area {
     grid-column: 1;
-    min-height: 80vh;
+    min-height: 75vh;
+    position: relative;
   }
   
   /* Скрываем всю боковую панель на мобильных */
@@ -325,23 +326,24 @@ footer a:hover {
   }
   
   canvas {
-    min-height: 65vh;
+    min-height: 60vh;
     width: 100% !important;
   }
   
   .mobile-controls {
     display: block;
+    bottom: 8px;
   }
   
   footer {
-    padding: 10px 0;
+    padding: 15px 0 8px;
     font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
   canvas {
-    min-height: 60vh;
+    min-height: 55vh;
   }
   
   h1 {
@@ -355,18 +357,22 @@ footer a:hover {
   }
   
   .control-btn {
-    width: 65px;
-    height: 65px;
-    font-size: 26px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
   }
   
   .mobile-controls {
-    bottom: 15px;
-    padding: 0 15px;
+    bottom: 5px;
+    padding: 0 10px;
   }
   
   .control-row {
-    gap: 12px;
+    gap: 8px;
+  }
+  
+  footer {
+    padding: 12px 0 5px;
   }
 }
 
@@ -375,14 +381,24 @@ footer a:hover {
   .shell {
     grid-template-rows: auto 1fr auto;
     height: 100vh;
+    gap: 5px;
   }
   
   .game-area {
-    min-height: 70vh;
+    min-height: 65vh;
   }
   
   canvas {
-    min-height: 60vh;
+    min-height: 55vh;
+  }
+  
+  .mobile-controls {
+    bottom: 5px;
+  }
+  
+  header {
+    margin-bottom: 2px;
+    padding: 5px 0;
   }
 }
 
@@ -391,27 +407,106 @@ footer a:hover {
   .shell {
     grid-template-columns: 1fr 250px;
     height: 100vh;
+    gap: 8px;
   }
   
   .game-area {
-    min-height: 85vh;
+    min-height: 80vh;
   }
   
   canvas {
-    min-height: 75vh;
+    min-height: 70vh;
   }
   
   .mobile-controls {
-    bottom: 15px;
+    bottom: 8px;
+    display: none; /* Скрываем кнопки в ландшафте с панелью */
   }
   
   .control-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 22px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
   }
   
   #nextCanvas {
-    height: 80px;
+    height: 70px;
+  }
+  
+  /* Показываем боковую панель в ландшафте */
+  .ui {
+    display: flex !important;
+  }
+}
+
+/* Для очень маленьких высот в ландшафте */
+@media (max-width: 920px) and (orientation: landscape) and (max-height: 500px) {
+  .game-area {
+    min-height: 75vh;
+  }
+  
+  canvas {
+    min-height: 65vh;
+  }
+  
+  .mobile-controls {
+    bottom: 5px;
+  }
+  
+  .control-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .ui {
+    gap: 5px;
+  }
+  
+  .panel {
+    padding: 6px;
+  }
+  
+  .panel h2 {
+    font-size: 16px;
+  }
+  
+  .score-big {
+    font-size: 16px;
+  }
+}
+
+/* Для экстремально маленьких высот */
+@media (max-width: 920px) and (orientation: landscape) and (max-height: 400px) {
+  .game-area {
+    min-height: 70vh;
+  }
+  
+  canvas {
+    min-height: 60vh;
+  }
+  
+  .mobile-controls {
+    bottom: 3px;
+  }
+  
+  .control-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  header {
+    padding: 2px 0;
+  }
+  
+  h1 {
+    font-size: 16px;
+  }
+  
+  .game-logo {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
   }
 }
