@@ -941,3 +941,43 @@
   render();
   gameLoop();
 })();
+
+// Добавьте этот код в функцию setupMobileControls() в tetris.js
+
+// Обработчики для мобильных кнопок управления игрой
+const mobileBtnStart = document.getElementById('mobileBtnStart');
+const mobileBtnPause = document.getElementById('mobileBtnPause');
+const mobileBtnMenu = document.getElementById('mobileBtnMenu');
+
+if (mobileBtnStart) {
+  mobileBtnStart.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startGame();
+  });
+  mobileBtnStart.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startGame();
+  });
+}
+
+if (mobileBtnPause) {
+  mobileBtnPause.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    togglePause();
+  });
+  mobileBtnPause.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    togglePause();
+  });
+}
+
+if (mobileBtnMenu) {
+  mobileBtnMenu.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    window.location.href = 'index.html';
+  });
+  mobileBtnMenu.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    window.location.href = 'index.html';
+  });
+}
