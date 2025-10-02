@@ -31,14 +31,12 @@
   // Настройка canvas
   const canvas = document.getElementById('canvas');
   const nextCanvas = document.getElementById('nextCanvas');
-  const mobileNextCanvas = document.getElementById('mobileNextCanvas');
-  if (!canvas || !nextCanvas || !mobileNextCanvas) {
+  if (!canvas || !nextCanvas) {
     console.error('Canvas elements not found!');
     return;
   }
   const ctx = canvas.getContext('2d', { alpha: true });
   const nextCtx = nextCanvas.getContext('2d', { alpha: true });
-  const mobileNextCtx = mobileNextCanvas.getContext('2d', { alpha: true });
   const DPR = window.devicePixelRatio || 1;
   
   // UI элементы
@@ -49,7 +47,6 @@
   const levelEl = document.getElementById('level');
   const linesEl = document.getElementById('lines');
   const bestEl = document.getElementById('best');
-  const mobileScoreEl = document.getElementById('mobileScore');
   
   // Кнопки мобильного управления
   const btnLeft = document.getElementById('btnLeft');
@@ -58,12 +55,11 @@
   const btnDrop = document.getElementById('btnDrop');
   const btnRotate = document.getElementById('btnRotate');
   
-  if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl || !mobileScoreEl) {
+  if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl) {
     console.error('One or more UI elements not found!');
     return;
   }
   bestEl.textContent = best;
-  mobileScoreEl.textContent = '0';
   
   // Фигуры Тетриса
   const SHAPES = [
@@ -136,13 +132,6 @@
     nextCanvas.height = Math.floor(nextRect.height * DPR);
     nextCanvas.style.width = '100%';
     nextCanvas.style.height = '120px';
-    
-    // И mobileNextCanvas
-    const mobileNextRect = mobileNextCanvas.getBoundingClientRect();
-    mobileNextCanvas.width = Math.floor(mobileNextRect.width * DPR);
-    mobileNextCanvas.height = Math.floor(mobileNextRect.height * DPR);
-    mobileNextCanvas.style.width = '60px';
-    mobileNextCanvas.style.height = '60px';
     
     updateLayout();
     render();
@@ -254,12 +243,101 @@
       running = false;
       btnStart.textContent = '▶ Старт';
       
+      // Показываем уведомление с итоговым счётом
+      showGameOverNotification();
+      
       if (score > best) {
         best = score;
         localStorage.setItem('tetris_best', String(best));
         bestEl.textContent = best;
       }
     }
+  }
+  
+  // Показать уведомление об окончании игры
+  function showGameOverNotification() {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = 'game-over-notification';
+    notification.innerHTML = `
+      <div class="notification-content">
+        <h3>Игра окончена!</h3>
+        <div class="final-score">Ваш счёт: <span class="score-highlight">${score}</span></div>
+        ${score > best ? '<div class="new-record">🎉 Новый рекорд!</div>' : ''}
+        <button class="notification-btn" onclick="this.parentElement.parentElement.remove()">OK</button>
+      </div>
+    `;
+    
+    // Добавляем стили
+    notification.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 7, 19, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    `;
+    
+    const content = notification.querySelector('.notification-content');
+    content.style.cssText = `
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px);
+      max-width: 300px;
+      width: 90%;
+    `;
+    
+    content.querySelector('h3').style.cssText = `
+      color: #fff;
+      margin: 0 0 15px 0;
+      font-size: 24px;
+    `;
+    
+    content.querySelector('.final-score').style.cssText = `
+      color: var(--muted);
+      font-size: 18px;
+      margin: 15px 0;
+    `;
+    
+    content.querySelector('.score-highlight').style.cssText = `
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 24px;
+    `;
+    
+    content.querySelector('.new-record').style.cssText = `
+      color: #ffcc00;
+      font-weight: bold;
+      margin: 10px 0;
+      font-size: 16px;
+    `;
+    
+    const button = content.querySelector('.notification-btn');
+    button.style.cssText = `
+      background: var(--neon1);
+      color: #021018;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 16px;
+    `;
+    
+    button.addEventListener('click', () => {
+      notification.remove();
+    });
+    
+    document.body.appendChild(notification);
   }
   
   // Очистка заполненных линий
@@ -317,7 +395,6 @@
   // Обновление счета
   function updateScore() {
     scoreEl.textContent = score;
-    mobileScoreEl.textContent = score;
     levelEl.textContent = level;
     linesEl.textContent = lines;
   }
@@ -579,49 +656,49 @@
   }
   
   // Рисование следующей фигуры
-  function renderNextPiece(context, canvasWidth, canvasHeight) {
+  function renderNextPiece() {
     if (!nextPiece) return;
     
-    const cellSize = Math.min(20, canvasWidth / 6);
+    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    
+    const cellSize = Math.min(20, nextCanvas.width / 6);
     const padding = cellSize * 0.1;
     const shape = nextPiece.shape;
     
     // Центрируем фигуру
-    const offsetX = (canvasWidth - shape[0].length * cellSize) / 2;
-    const offsetY = (canvasHeight - shape.length * cellSize) / 2;
+    const offsetX = (nextCanvas.width - shape[0].length * cellSize) / 2;
+    const offsetY = (nextCanvas.height - shape.length * cellSize) / 2;
     
-    context.save();
-    context.shadowBlur = 10;
-    context.shadowColor = `${nextPiece.color}80`;
-    context.fillStyle = nextPiece.color;
+    nextCtx.save();
+    nextCtx.shadowBlur = 10;
+    nextCtx.shadowColor = `${nextPiece.color}80`;
+    nextCtx.fillStyle = nextPiece.color;
     
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c] !== 0) {
           // Рисуем закругленные блоки как в основной игре
-          context.beginPath();
-          context.moveTo(offsetX + c * cellSize + padding + padding, offsetY + r * cellSize + padding);
-          context.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, 
+          nextCtx.beginPath();
+          nextCtx.moveTo(offsetX + c * cellSize + padding + padding, offsetY + r * cellSize + padding);
+          nextCtx.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, 
                        offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, padding);
-          context.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, 
+          nextCtx.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, 
                        offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, padding);
-          context.arcTo(offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, 
+          nextCtx.arcTo(offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, 
                        offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, padding);
-          context.arcTo(offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, 
+          nextCtx.arcTo(offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, 
                        offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, padding);
-          context.closePath();
-          context.fill();
+          nextCtx.closePath();
+          nextCtx.fill();
         }
       }
     }
-    context.restore();
+    nextCtx.restore();
   }
   
   // Рендеринг
   function render() {
     ctx.clearRect(0, 0, W, H);
-    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-    mobileNextCtx.clearRect(0, 0, mobileNextCanvas.width, mobileNextCanvas.height);
     
     const cellSize = Math.min(gameWidth / COLS, gameHeight / ROWS);
     const padding = cellSize * 0.1;
@@ -704,9 +781,10 @@
       ctx.restore();
     }
     
-    // Рисование следующей фигуры
-    renderNextPiece(nextCtx, nextCanvas.width, nextCanvas.height);
-    renderNextPiece(mobileNextCtx, mobileNextCanvas.width, mobileNextCanvas.height);
+    // Рисование следующей фигуры (только на десктопе)
+    if (window.innerWidth > 820) {
+      renderNextPiece();
+    }
     
     // Рисование анимаций
     animations.forEach(anim => {
