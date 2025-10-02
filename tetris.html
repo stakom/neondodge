@@ -22,12 +22,22 @@
     <div class="game-area">
       <canvas id="canvas"></canvas>
       <div class="mobile-controls">
-        <div class="control-row">
-          <button class="control-btn" id="btnLeft">←</button>
-          <button class="control-btn drop-btn" id="btnDrop">↓↓</button>
-          <button class="control-btn" id="btnRight">→</button>
-          <button class="control-btn" id="btnDown">↓</button>
-          <button class="control-btn" id="btnRotate">↻</button>
+        <div class="controls-container">
+          <!-- Основные кнопки управления -->
+          <div class="control-row">
+            <button class="control-btn" id="btnLeft">←</button>
+            <button class="control-btn drop-btn" id="btnDrop">↓↓</button>
+            <button class="control-btn" id="btnRight">→</button>
+            <button class="control-btn" id="btnDown">↓</button>
+            <button class="control-btn" id="btnRotate">↻</button>
+          </div>
+          
+          <!-- Кнопки управления игрой -->
+          <div class="game-control-row">
+            <button class="game-control-btn primary" id="mobileBtnStart">▶ Старт</button>
+            <button class="game-control-btn" id="mobileBtnPause">⏸ Пауза</button>
+            <button class="game-control-btn" id="mobileBtnMenu">↩ Меню</button>
+          </div>
         </div>
       </div>
     </div>
@@ -73,25 +83,6 @@
         <div class="muted">Пробел - Мгновенный сброс</div>
       </div>
     </div>
-    <div class="mobile-controls">
-  <div class="controls-container">
-    <!-- Основные кнопки управления -->
-    <div class="control-row">
-      <button class="control-btn" id="btnLeft">←</button>
-      <button class="control-btn drop-btn" id="btnDrop">↓↓</button>
-      <button class="control-btn" id="btnRight">→</button>
-      <button class="control-btn" id="btnDown">↓</button>
-      <button class="control-btn" id="btnRotate">↻</button>
-    </div>
-    
-    <!-- Кнопки управления игрой -->
-    <div class="game-control-row">
-      <button class="game-control-btn primary" id="mobileBtnStart">▶ Старт</button>
-      <button class="game-control-btn" id="mobileBtnPause">⏸ Пауза</button>
-      <button class="game-control-btn" id="mobileBtnMenu">↩ Меню</button>
-    </div>
-  </div>
-</div>
     <footer>
       Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
     </footer>

@@ -59,6 +59,11 @@
   const btnDrop = document.getElementById('btnDrop');
   const btnRotate = document.getElementById('btnRotate');
   
+  // Мобильные кнопки управления игрой
+  const mobileBtnStart = document.getElementById('mobileBtnStart');
+  const mobileBtnPause = document.getElementById('mobileBtnPause');
+  const mobileBtnMenu = document.getElementById('mobileBtnMenu');
+  
   if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl) {
     console.error('One or more UI elements not found!');
     return;
@@ -129,7 +134,7 @@
     // Уменьшаем высоту canvas на мобильных устройствах
     if (window.innerWidth <= 820) {
       // На мобильных - оставляем больше места для кнопок
-      const mobileHeight = Math.max(400, Math.floor(rect.width * 1.2 * DPR)); // Уменьшил соотношение
+      const mobileHeight = Math.max(400, Math.floor(rect.width * 1.2 * DPR));
       canvas.width = Math.max(400, Math.floor(rect.width * DPR));
       canvas.height = mobileHeight;
     } else {
@@ -177,7 +182,7 @@
       leftX = W * 0.02;
       gameWidth = W * 0.96;
       topY = H * 0.02;
-      gameHeight = H * 0.90; // Уменьшил высоту игрового поля чтобы освободить место для кнопок
+      gameHeight = H * 0.90;
     }
   }
   
@@ -265,6 +270,7 @@
       gameOver = true;
       running = false;
       btnStart.textContent = '▶ Старт';
+      if (mobileBtnStart) mobileBtnStart.textContent = '▶ Старт';
       
       // Показываем уведомление с итоговым счётом
       showGameOverNotification();
@@ -559,6 +565,40 @@
         rotatePiece();
       });
     }
+    
+    // Обработчики для мобильных кнопок управления игрой
+    if (mobileBtnStart) {
+      mobileBtnStart.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startGame();
+      });
+      mobileBtnStart.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startGame();
+      });
+    }
+    
+    if (mobileBtnPause) {
+      mobileBtnPause.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        togglePause();
+      });
+      mobileBtnPause.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        togglePause();
+      });
+    }
+    
+    if (mobileBtnMenu) {
+      mobileBtnMenu.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      });
+      mobileBtnMenu.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      });
+    }
   }
   
   // Обработчики событий клавиатуры
@@ -612,6 +652,9 @@
     
     paused = !paused;
     btnPause.textContent = paused ? '▶ Продолжить' : '⏸ Пауза';
+    if (mobileBtnPause) {
+      mobileBtnPause.textContent = paused ? '▶ Продолж' : '⏸ Пауза';
+    }
   }
   
   // Запуск игры
@@ -672,6 +715,8 @@
     
     btnStart.textContent = '🔄 Рестарт';
     btnPause.textContent = '⏸ Пауза';
+    if (mobileBtnStart) mobileBtnStart.textContent = '🔄 Рестарт';
+    if (mobileBtnPause) mobileBtnPause.textContent = '⏸ Пауза';
     
     updateScore();
     render();
@@ -941,43 +986,3 @@
   render();
   gameLoop();
 })();
-
-// Добавьте этот код в функцию setupMobileControls() в tetris.js
-
-// Обработчики для мобильных кнопок управления игрой
-const mobileBtnStart = document.getElementById('mobileBtnStart');
-const mobileBtnPause = document.getElementById('mobileBtnPause');
-const mobileBtnMenu = document.getElementById('mobileBtnMenu');
-
-if (mobileBtnStart) {
-  mobileBtnStart.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    startGame();
-  });
-  mobileBtnStart.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    startGame();
-  });
-}
-
-if (mobileBtnPause) {
-  mobileBtnPause.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    togglePause();
-  });
-  mobileBtnPause.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    togglePause();
-  });
-}
-
-if (mobileBtnMenu) {
-  mobileBtnMenu.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    window.location.href = 'index.html';
-  });
-  mobileBtnMenu.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    window.location.href = 'index.html';
-  });
-}
