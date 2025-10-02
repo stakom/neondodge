@@ -115,50 +115,6 @@ canvas {
   z-index: 1;
 }
 
-.mobile-controls {
-  display: none;
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  padding: 0 20px;
-  z-index: 10;
-}
-
-.control-row {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.control-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  border: 2px solid rgba(255,255,255,0.2);
-  background: rgba(0,0,0,0.6);
-  color: var(--accent);
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.control-btn.wide {
-  width: 100px;
-}
-
-.control-btn:active {
-  background: rgba(255,111,97,0.3);
-  transform: scale(0.95);
-}
-
 .ui {
   display: flex;
   flex-direction: column;
@@ -280,7 +236,7 @@ footer a:hover {
   
   .game-area {
     grid-column: 1;
-    min-height: 60vh;
+    min-height: 70vh; /* Увеличиваем высоту игрового поля */
   }
   
   .ui {
@@ -303,12 +259,8 @@ footer a:hover {
   }
   
   canvas {
-    min-height: 50vh;
+    min-height: 65vh; /* Значительно увеличиваем высоту canvas на мобильных */
     width: 100% !important;
-  }
-  
-  .mobile-controls {
-    display: block;
   }
   
   .panel h2 {
@@ -335,7 +287,7 @@ footer a:hover {
 
 @media (max-width: 480px) {
   canvas {
-    min-height: 45vh;
+    min-height: 60vh; /* Ещё больше увеличиваем на маленьких экранах */
   }
   
   h1 {
@@ -346,25 +298,6 @@ footer a:hover {
     width: 36px;
     height: 36px;
     font-size: 14px;
-  }
-  
-  .control-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-  
-  .control-btn.wide {
-    width: 80px;
-  }
-  
-  .mobile-controls {
-    bottom: 10px;
-    padding: 0 10px;
-  }
-  
-  .control-row {
-    gap: 10px;
   }
   
   #nextCanvas {
@@ -380,11 +313,11 @@ footer a:hover {
   }
   
   .game-area {
-    min-height: 50vh;
+    min-height: 70vh;
   }
   
   canvas {
-    min-height: 45vh;
+    min-height: 65vh;
   }
 }
 
@@ -401,20 +334,6 @@ footer a:hover {
   
   canvas {
     min-height: 80vh;
-  }
-  
-  .mobile-controls {
-    bottom: 10px;
-  }
-  
-  .control-btn {
-    width: 45px;
-    height: 45px;
-    font-size: 18px;
-  }
-  
-  .control-btn.wide {
-    width: 70px;
   }
   
   #nextCanvas {
