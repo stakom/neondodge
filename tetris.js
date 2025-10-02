@@ -172,15 +172,15 @@
   // Обновление макета
   function updateLayout() {
     if (window.innerWidth > 820) {
-      // Desktop - увеличенное игровое поле
-      leftX = W * 0.02;
-      gameWidth = W * 0.7;
+      // Desktop - увеличенное игровое поле на 10%
+      leftX = W * 0.01; // Уменьшил отступ слева
+      gameWidth = W * 0.77; // Увеличил на 10% с 0.7
       topY = H * 0.02;
       gameHeight = H * 0.96;
     } else {
       // Mobile - максимально используем пространство, но оставляем место для кнопок
-      leftX = W * 0.02;
-      gameWidth = W * 0.96;
+      leftX = W * 0.01; // Уменьшил отступ слева
+      gameWidth = W * 0.98; // Увеличил на 10% с 0.96
       topY = H * 0.02;
       gameHeight = H * 0.90;
     }

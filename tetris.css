@@ -120,11 +120,11 @@ canvas {
 .mobile-controls {
   display: none;
   width: 100%;
-  padding: 15px 10px 10px;
+  padding: 15px 5px 10px;
   z-index: 10;
   background: rgba(5, 7, 19, 0.8);
   border-radius: 0 0 8px 8px;
-  margin-top: -8px; /* Наложение на нижнюю часть canvas */
+  margin-top: -8px;
 }
 
 .controls-container {
@@ -136,18 +136,18 @@ canvas {
 .control-row {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 15px;
   margin-bottom: 0;
 }
 
 .control-btn {
-  width: 60px;
-  height: 60px;
+  width: 66px;
+  height: 66px;
   border-radius: 16px;
   border: 3px solid rgba(255,255,255,0.2);
   background: rgba(0,0,0,0.7);
   color: var(--accent);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -188,18 +188,18 @@ canvas {
 .game-control-row {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   margin-top: 5px;
 }
 
 .game-control-btn {
-  width: 50px;
-  height: 40px;
+  width: 55px;
+  height: 44px;
   border-radius: 10px;
   border: 2px solid rgba(255,255,255,0.15);
   background: rgba(0,0,0,0.6);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -351,6 +351,7 @@ footer a:hover {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    width: 100%;
   }
   
   /* Скрываем всю боковую панель на мобильных */
@@ -383,7 +384,8 @@ footer a:hover {
     display: block;
     flex-shrink: 0;
     margin-top: 0;
-    padding: 12px 10px 10px;
+    padding: 12px 5px 10px;
+    width: 100%;
   }
   
   footer {
@@ -395,6 +397,7 @@ footer a:hover {
   header {
     flex-shrink: 0;
     margin-bottom: 2px;
+    width: 100%;
   }
 }
 
@@ -415,27 +418,27 @@ footer a:hover {
   }
   
   .control-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 22px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
   }
   
   .game-control-btn {
-    width: 45px;
-    height: 36px;
-    font-size: 12px;
+    width: 50px;
+    height: 40px;
+    font-size: 13px;
   }
   
   .mobile-controls {
-    padding: 10px 8px 8px;
+    padding: 10px 3px 8px;
   }
   
   .control-row {
-    gap: 10px;
+    gap: 12px;
   }
   
   .game-control-row {
-    gap: 6px;
+    gap: 8px;
   }
   
   footer {
@@ -452,15 +455,23 @@ footer a:hover {
   
   .game-area {
     min-height: 0;
+    width: 100%;
   }
   
   canvas {
     height: 60vh;
+    width: 100% !important;
   }
   
   header {
     margin-bottom: 2px;
     padding: 5px 0;
+    width: 100%;
+  }
+  
+  .mobile-controls {
+    width: 100%;
+    padding: 12px 3px 10px;
   }
 }
 
@@ -475,11 +486,13 @@ footer a:hover {
   
   .game-area {
     min-height: 80vh;
+    width: 100%;
   }
   
   canvas {
     height: 75vh;
     min-height: auto;
+    width: 100% !important;
   }
   
   .mobile-controls {
@@ -487,9 +500,9 @@ footer a:hover {
   }
   
   .control-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
   }
   
   #nextCanvas {
@@ -532,14 +545,46 @@ footer a:hover {
 /* Специальные стили для очень маленьких экранов */
 @media (max-width: 380px) {
   .control-btn {
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
+  }
+  
+  .game-control-btn {
+    width: 46px;
+    height: 37px;
+    font-size: 12px;
+  }
+  
+  .control-row {
+    gap: 10px;
+  }
+  
+  .game-control-row {
+    gap: 7px;
+  }
+  
+  canvas {
+    height: 55vh;
+    min-height: 280px;
+  }
+  
+  .mobile-controls {
+    padding: 10px 2px 8px;
+  }
+}
+
+/* Для экстремально узких экранов */
+@media (max-width: 350px) {
+  .control-btn {
+    width: 52px;
+    height: 52px;
     font-size: 20px;
   }
   
   .game-control-btn {
-    width: 42px;
-    height: 34px;
+    width: 43px;
+    height: 35px;
     font-size: 11px;
   }
   
@@ -548,11 +593,6 @@ footer a:hover {
   }
   
   .game-control-row {
-    gap: 5px;
-  }
-  
-  canvas {
-    height: 55vh;
-    min-height: 280px;
+    gap: 6px;
   }
 }
