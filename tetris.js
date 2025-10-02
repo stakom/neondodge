@@ -11,6 +11,7 @@
   let lines = 0;
   let best = parseInt(localStorage.getItem('tetris_best') || '0', 10);
   let gameOver = false;
+  let soundEnabled = true;
   
   // Игровое поле
   const board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
@@ -18,7 +19,7 @@
   // Текущая и следующая фигура
   let currentPiece = null;
   let nextPiece = null;
-  
+
   // Время и интервалы
   let dropTime = 0;
   let dropInterval = 1000; // 1 секунда
@@ -30,7 +31,10 @@
   
   // Защита от повторного нажатия мгновенного спуска
   let dropCooldown = false;
-  const DROP_COOLDOWN_TIME = 300; // 300ms защита
+  const DROP_COOLDOWN_TIME = 800; // Увеличил до 800ms
+  
+  // Анимация мгновенного падения
+  let hardDropAnimation = null;
   
   // Настройка canvas
   const canvas = document.getElementById('canvas');
@@ -47,6 +51,7 @@
   const btnStart = document.getElementById('btnStart');
   const btnPause = document.getElementById('btnPause');
   const btnBack = document.getElementById('btnBack');
+  const btnSound = document.getElementById('btnSound');
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const linesEl = document.getElementById('lines');
@@ -127,18 +132,70 @@
     '#ff0000'  // Z - красный
   ];
   
+  // Инициализация звуков
+  function initSounds() {
+    // Простые звуки с помощью Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Создаем простые бипы для звуков
+      createBeepSound(523.25, 0.1); // Вращение
+      createBeepSound(392.00, 0.05); // Движение
+      createBeepSound(261.63, 0.2); // Падение
+      createBeepSound(659.25, 0.3); // Линия
+      createBeepSound(220.00, 0.5); // Game Over
+      
+    } catch (e) {
+      console.log('Web Audio API не поддерживается, звуки отключены');
+      soundEnabled = false;
+      if (btnSound) btnSound.textContent = '🔇 Выкл';
+    }
+  }
+  
+  // Создание простого звука
+  function createBeepSound(frequency, duration) {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+      // Игнорируем ошибки создания звуков
+    }
+  }
+  
+  // Воспроизведение звука
+  function playSound(frequency, duration) {
+    if (!soundEnabled) return;
+    
+    try {
+      createBeepSound(frequency, duration);
+    } catch (e) {
+      console.log('Ошибка воспроизведения звука');
+    }
+  }
+  
   // Изменение размера canvas
   function resize() {
     const rect = canvas.getBoundingClientRect();
     
     // Уменьшаем высоту canvas на мобильных устройствах
     if (window.innerWidth <= 820) {
-      // На мобильных - оставляем больше места для кнопок
-      const mobileHeight = Math.max(400, Math.floor(rect.width * 1.2 * DPR));
+      const mobileHeight = Math.max(400, Math.floor(rect.width * 1.3 * DPR));
       canvas.width = Math.max(400, Math.floor(rect.width * DPR));
       canvas.height = mobileHeight;
     } else {
-      // На десктопе - обычная высота
       canvas.width = Math.max(400, Math.floor(rect.width * DPR));
       canvas.height = Math.max(600, Math.floor(rect.height * DPR));
     }
@@ -172,15 +229,15 @@
   // Обновление макета
   function updateLayout() {
     if (window.innerWidth > 820) {
-      // Desktop - увеличенное игровое поле на 10%
-      leftX = W * 0.01; // Уменьшил отступ слева
-      gameWidth = W * 0.77; // Увеличил на 10% с 0.7
+      // Desktop - увеличенное игровое поле на 20%
+      leftX = W * 0.005; // Уменьшил отступ слева
+      gameWidth = W * 0.84; // Увеличил на 20% с 0.7
       topY = H * 0.02;
       gameHeight = H * 0.96;
     } else {
-      // Mobile - максимально используем пространство, но оставляем место для кнопок
-      leftX = W * 0.01; // Уменьшил отступ слева
-      gameWidth = W * 0.98; // Увеличил на 10% с 0.96
+      // Mobile - максимально используем пространство
+      leftX = W * 0.005; // Уменьшил отступ слева
+      gameWidth = W * 0.99; // Увеличил на 20% с 0.96
       topY = H * 0.02;
       gameHeight = H * 0.90;
     }
@@ -249,6 +306,7 @@
     // Проверка заполненных линий
     const cleared = clearLines();
     if (cleared > 0) {
+      playSound(659.25, 0.3); // Звук линии
       // Очки за линии
       const linePoints = [40, 100, 300, 1200];
       score += linePoints[cleared - 1] * level;
@@ -265,15 +323,14 @@
     currentPiece = nextPiece;
     nextPiece = createPiece();
     
-    // Проверка на окончание игры
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверка на окончание игры ДОЛЖНА быть после установки новой фигуры
     if (collision(currentPiece, currentPiece.x, currentPiece.y)) {
       gameOver = true;
       running = false;
       btnStart.textContent = '▶ Старт';
       if (mobileBtnStart) mobileBtnStart.textContent = '▶ Старт';
       
-      // Показываем уведомление с итоговым счётом
-      showGameOverNotification();
+      playSound(220.00, 0.5); // Звук Game Over
       
       if (score > best) {
         best = score;
@@ -281,92 +338,6 @@
         bestEl.textContent = best;
       }
     }
-  }
-  
-  // Показать уведомление об окончании игры
-  function showGameOverNotification() {
-    // Создаем элемент уведомления
-    const notification = document.createElement('div');
-    notification.className = 'game-over-notification';
-    notification.innerHTML = `
-      <div class="notification-content">
-        <h3>Игра окончена!</h3>
-        <div class="final-score">Ваш счёт: <span class="score-highlight">${score}</span></div>
-        ${score > best ? '<div class="new-record">🎉 Новый рекорд!</div>' : ''}
-        <button class="notification-btn" onclick="this.parentElement.parentElement.remove()">OK</button>
-      </div>
-    `;
-    
-    // Добавляем стили
-    notification.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(5, 7, 19, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(10px);
-    `;
-    
-    const content = notification.querySelector('.notification-content');
-    content.style.cssText = `
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      border-radius: 16px;
-      padding: 30px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(20px);
-      max-width: 300px;
-      width: 90%;
-    `;
-    
-    content.querySelector('h3').style.cssText = `
-      color: #fff;
-      margin: 0 0 15px 0;
-      font-size: 24px;
-    `;
-    
-    content.querySelector('.final-score').style.cssText = `
-      color: var(--muted);
-      font-size: 18px;
-      margin: 15px 0;
-    `;
-    
-    content.querySelector('.score-highlight').style.cssText = `
-      color: var(--accent);
-      font-weight: bold;
-      font-size: 24px;
-    `;
-    
-    content.querySelector('.new-record').style.cssText = `
-      color: #ffcc00;
-      font-weight: bold;
-      margin: 10px 0;
-      font-size: 16px;
-    `;
-    
-    const button = content.querySelector('.notification-btn');
-    button.style.cssText = `
-      background: var(--neon1);
-      color: #021018;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 15px;
-      font-size: 16px;
-    `;
-    
-    button.addEventListener('click', () => {
-      notification.remove();
-    });
-    
-    document.body.appendChild(notification);
   }
   
   // Очистка заполненных линий
@@ -391,8 +362,8 @@
             leftX + (c + 0.5) * (gameWidth / COLS),
             topY + (r + 0.5) * (gameHeight / ROWS),
             board[r][c],
-            window.innerWidth > 820 ? 5 : 3,
-            1.2
+            window.innerWidth > 820 ? 8 : 5,
+            2.0
           );
         }
         
@@ -412,10 +383,10 @@
       particles.push({
         x, y,
         vx: (Math.random() * 2 - 1) * spread,
-        vy: (Math.random() * 2 - 1) * spread,
-        life: rand(0.4, 0.8),
+        vy: (Math.random() * 2 - 1.5) * spread, // Больше вверх
+        life: rand(0.6, 1.2),
         age: 0,
-        size: rand(2, 4),
+        size: rand(3, 6),
         color
       });
     }
@@ -452,9 +423,17 @@
       pa.age += dt;
       pa.x += pa.vx;
       pa.y += pa.vy;
-      pa.vy += 0.2 * dt;
+      pa.vy += 0.3 * dt; // Увеличил гравитацию
       if (pa.age >= pa.life) {
         particles.splice(i, 1);
+      }
+    }
+    
+    // Обновление анимации мгновенного падения
+    if (hardDropAnimation) {
+      hardDropAnimation.age += dt;
+      if (hardDropAnimation.age >= hardDropAnimation.duration) {
+        hardDropAnimation = null;
       }
     }
   }
@@ -466,8 +445,10 @@
     if (!collision(currentPiece, currentPiece.x + dx, currentPiece.y + dy)) {
       currentPiece.x += dx;
       currentPiece.y += dy;
+      if (dx !== 0) playSound(392.00, 0.05); // Звук движения
     } else if (dy > 0) {
       // Если движение вниз невозможно, размещаем фигуру
+      playSound(261.63, 0.2); // Звук падения
       placePiece();
     }
   }
@@ -489,6 +470,7 @@
     // Проверка столкновения после вращения
     if (!collision({ ...currentPiece, shape: rotated }, currentPiece.x, currentPiece.y)) {
       currentPiece.shape = rotated;
+      playSound(523.25, 0.1); // Звук вращения
     }
   }
   
@@ -498,9 +480,34 @@
     // Активируем защиту от повторного нажатия
     dropCooldown = true;
     
+    // Запускаем анимацию
+    hardDropAnimation = {
+      age: 0,
+      duration: 0.3
+    };
+    
+    let dropDistance = 0;
     while (!collision(currentPiece, currentPiece.x, currentPiece.y + 1)) {
       currentPiece.y++;
+      dropDistance++;
     }
+    
+    // Визуальные эффекты для мгновенного падения
+    for (let r = 0; r < currentPiece.shape.length; r++) {
+      for (let c = 0; c < currentPiece.shape[r].length; c++) {
+        if (currentPiece.shape[r][c] !== 0) {
+          spawnParticles(
+            leftX + (currentPiece.x + c + 0.5) * (gameWidth / COLS),
+            topY + (currentPiece.y + r + 0.5) * (gameHeight / ROWS),
+            currentPiece.color,
+            3,
+            1.5
+          );
+        }
+      }
+    }
+    
+    playSound(261.63, 0.2); // Звук падения
     placePiece();
     
     // Сбрасываем защиту через заданное время
@@ -647,6 +654,13 @@
     window.location.href = 'index.html';
   });
   
+  if (btnSound) {
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      btnSound.textContent = soundEnabled ? '🔊 Вкл' : '🔇 Выкл';
+    });
+  }
+  
   function togglePause() {
     if (!running || gameOver) return;
     
@@ -657,7 +671,7 @@
     }
   }
   
-  // Запуск игры
+  // Запуск игры - ИСПРАВЛЕННАЯ ВЕРСИЯ
   function startGame() {
     // Если игра на паузе, снимаем паузу
     if (paused) {
@@ -667,30 +681,26 @@
     
     // Если игра уже запущена, перезапускаем
     if (running) {
-      // Очистка поля
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          board[r][c] = 0;
-        }
-      }
-      
-      // Сброс переменных
-      score = 0;
-      level = 1;
-      lines = 0;
-      gameOver = false;
-      dropTime = 0;
-      dropInterval = 1000;
-      dropCooldown = false; // Сбрасываем защиту
-      
-      // Создание фигур
-      currentPiece = createPiece();
-      nextPiece = createPiece();
-      
-      updateScore();
+      resetGame();
       return;
     }
     
+    // Первый запуск игры
+    resetGame();
+    running = true;
+    paused = false;
+    
+    btnStart.textContent = '🔄 Рестарт';
+    btnPause.textContent = '⏸ Пауза';
+    if (mobileBtnStart) mobileBtnStart.textContent = '🔄 Рестарт';
+    if (mobileBtnPause) mobileBtnPause.textContent = '⏸ Пауза';
+    
+    updateScore();
+    render();
+  }
+  
+  // Сброс игры - ВАЖНАЯ ФУНКЦИЯ
+  function resetGame() {
     // Очистка поля
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
@@ -707,19 +717,18 @@
     paused = false;
     dropTime = 0;
     dropInterval = 1000;
-    dropCooldown = false; // Сбрасываем защиту
+    dropCooldown = false;
     
-    // Создание фигур
-    currentPiece = createPiece();
+    // Очистка анимаций и частиц
+    animations.length = 0;
+    particles.length = 0;
+    hardDropAnimation = null;
+    
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Сначала создаем следующую фигуру, потом текущую
     nextPiece = createPiece();
-    
-    btnStart.textContent = '🔄 Рестарт';
-    btnPause.textContent = '⏸ Пауза';
-    if (mobileBtnStart) mobileBtnStart.textContent = '🔄 Рестарт';
-    if (mobileBtnPause) mobileBtnPause.textContent = '⏸ Пауза';
+    currentPiece = createPiece();
     
     updateScore();
-    render();
   }
   
   // Рисование закругленного прямоугольника
@@ -832,6 +841,13 @@
     
     // Рисование текущей фигуры
     if (currentPiece && running && !paused) {
+      // Анимация мгновенного падения
+      if (hardDropAnimation) {
+        const progress = hardDropAnimation.age / hardDropAnimation.duration;
+        const alpha = 0.7 + 0.3 * Math.sin(progress * Math.PI * 4);
+        ctx.globalAlpha = alpha;
+      }
+      
       ctx.save();
       ctx.shadowBlur = 20;
       ctx.shadowColor = `${currentPiece.color}80`;
@@ -857,6 +873,10 @@
         }
       }
       ctx.restore();
+      
+      if (hardDropAnimation) {
+        ctx.globalAlpha = 1;
+      }
     }
     
     // Рисование следующей фигуры (только на десктопе)
@@ -923,18 +943,29 @@
       ctx.restore();
     });
     
-    // Рисование Game Over
+    // Рисование Game Over - ИСПРАВЛЕННАЯ ВЕРСИЯ
     if (gameOver) {
       ctx.save();
-      ctx.fillStyle = 'rgba(2,6,10,0.6)';
+      ctx.fillStyle = 'rgba(2,6,10,0.8)';
       ctx.fillRect(gameX, gameY, gridWidth, gridHeight);
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.font = `${Math.min(28, gridWidth / 18)}px Inter, Arial`;
+      ctx.font = `bold ${Math.min(32, gridWidth / 15)}px Inter, Arial`;
       ctx.textAlign = 'center';
-      ctx.fillText('Game Over', gameX + gridWidth / 2, gameY + gridHeight * 0.42);
-      ctx.font = `${Math.min(14, gridWidth / 36)}px Inter, Arial`;
+      ctx.fillText('ИГРА ОКОНЧЕНА', gameX + gridWidth / 2, gameY + gridHeight * 0.4);
+      
+      ctx.font = `${Math.min(24, gridWidth / 20)}px Inter, Arial`;
       ctx.fillStyle = 'rgba(207,239,255,0.9)';
-      ctx.fillText('Нажми Старт для новой игры', gameX + gridWidth / 2, gameY + gridHeight * 0.5);
+      ctx.fillText(`Счёт: ${score}`, gameX + gridWidth / 2, gameY + gridHeight * 0.5);
+      
+      if (score > best) {
+        ctx.fillStyle = '#ffcc00';
+        ctx.font = `bold ${Math.min(20, gridWidth / 25)}px Inter, Arial`;
+        ctx.fillText('🎉 НОВЫЙ РЕКОРД!', gameX + gridWidth / 2, gameY + gridHeight * 0.6);
+      }
+      
+      ctx.fillStyle = 'rgba(207,239,255,0.7)';
+      ctx.font = `${Math.min(16, gridWidth / 30)}px Inter, Arial`;
+      ctx.fillText('Нажми СТАРТ для новой игры', gameX + gridWidth / 2, gameY + gridHeight * 0.75);
       ctx.textAlign = 'start';
       ctx.restore();
     }
@@ -947,10 +978,10 @@
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
       ctx.font = `${Math.min(28, gridWidth / 18)}px Inter, Arial`;
       ctx.textAlign = 'center';
-      ctx.fillText('Пауза', gameX + gridWidth / 2, gameY + gridHeight * 0.45);
+      ctx.fillText('ПАУЗА', gameX + gridWidth / 2, gameY + gridHeight * 0.45);
       ctx.font = `${Math.min(14, gridWidth / 36)}px Inter, Arial`;
       ctx.fillStyle = 'rgba(207,239,255,0.9)';
-      ctx.fillText('Нажми Продолжить', gameX + gridWidth / 2, gameY + gridHeight * 0.55);
+      ctx.fillText('Нажми ПРОДОЛЖИТЬ', gameX + gridWidth / 2, gameY + gridHeight * 0.55);
       ctx.textAlign = 'start';
       ctx.restore();
     }
@@ -983,6 +1014,7 @@
   // Инициализация
   updateLayout();
   setupMobileControls();
+  initSounds();
   render();
   gameLoop();
 })();

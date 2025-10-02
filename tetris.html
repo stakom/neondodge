@@ -20,7 +20,9 @@
       </div>
     </header>
     <div class="game-area">
-      <canvas id="canvas"></canvas>
+      <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+      </div>
       <div class="mobile-controls">
         <div class="controls-container">
           <!-- Основные кнопки управления -->
@@ -82,11 +84,35 @@
         <div class="muted">↻ - Поворот</div>
         <div class="muted">Пробел - Мгновенный сброс</div>
       </div>
+      <div class="panel">
+        <h2>Звук</h2>
+        <div class="controls">
+          <button id="btnSound" class="btn primary">🔊 Вкл</button>
+        </div>
+      </div>
     </div>
     <footer>
       Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
     </footer>
   </div>
+  
+  <!-- Скрытый аудио элемент для звуков -->
+  <audio id="soundRotate" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  </audio>
+  <audio id="soundMove" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  </audio>
+  <audio id="soundDrop" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  </audio>
+  <audio id="soundLine" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  </audio>
+  <audio id="soundGameOver" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  </audio>
+  
   <script src="tetris.js"></script>
 </body>
 </html>
