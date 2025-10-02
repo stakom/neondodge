@@ -31,12 +31,14 @@
   // Настройка canvas
   const canvas = document.getElementById('canvas');
   const nextCanvas = document.getElementById('nextCanvas');
-  if (!canvas || !nextCanvas) {
+  const mobileNextCanvas = document.getElementById('mobileNextCanvas');
+  if (!canvas || !nextCanvas || !mobileNextCanvas) {
     console.error('Canvas elements not found!');
     return;
   }
   const ctx = canvas.getContext('2d', { alpha: true });
   const nextCtx = nextCanvas.getContext('2d', { alpha: true });
+  const mobileNextCtx = mobileNextCanvas.getContext('2d', { alpha: true });
   const DPR = window.devicePixelRatio || 1;
   
   // UI элементы
@@ -47,18 +49,21 @@
   const levelEl = document.getElementById('level');
   const linesEl = document.getElementById('lines');
   const bestEl = document.getElementById('best');
+  const mobileScoreEl = document.getElementById('mobileScore');
   
   // Кнопки мобильного управления
   const btnLeft = document.getElementById('btnLeft');
   const btnRight = document.getElementById('btnRight');
   const btnDown = document.getElementById('btnDown');
+  const btnDrop = document.getElementById('btnDrop');
   const btnRotate = document.getElementById('btnRotate');
   
-  if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl) {
+  if (!btnStart || !btnPause || !btnBack || !scoreEl || !levelEl || !linesEl || !bestEl || !mobileScoreEl) {
     console.error('One or more UI elements not found!');
     return;
   }
   bestEl.textContent = best;
+  mobileScoreEl.textContent = '0';
   
   // Фигуры Тетриса
   const SHAPES = [
@@ -131,6 +136,13 @@
     nextCanvas.height = Math.floor(nextRect.height * DPR);
     nextCanvas.style.width = '100%';
     nextCanvas.style.height = '120px';
+    
+    // И mobileNextCanvas
+    const mobileNextRect = mobileNextCanvas.getBoundingClientRect();
+    mobileNextCanvas.width = Math.floor(mobileNextRect.width * DPR);
+    mobileNextCanvas.height = Math.floor(mobileNextRect.height * DPR);
+    mobileNextCanvas.style.width = '60px';
+    mobileNextCanvas.style.height = '60px';
     
     updateLayout();
     render();
@@ -305,6 +317,7 @@
   // Обновление счета
   function updateScore() {
     scoreEl.textContent = score;
+    mobileScoreEl.textContent = score;
     levelEl.textContent = level;
     linesEl.textContent = lines;
   }
@@ -414,6 +427,17 @@
       btnDown.addEventListener('mousedown', (e) => {
         e.preventDefault();
         movePiece(0, 1);
+      });
+    }
+    
+    if (btnDrop) {
+      btnDrop.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        hardDrop();
+      });
+      btnDrop.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        hardDrop();
       });
     }
     
@@ -555,49 +579,49 @@
   }
   
   // Рисование следующей фигуры
-  function renderNextPiece() {
+  function renderNextPiece(context, canvasWidth, canvasHeight) {
     if (!nextPiece) return;
     
-    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
-    const cellSize = Math.min(20, nextCanvas.width / 6);
+    const cellSize = Math.min(20, canvasWidth / 6);
     const padding = cellSize * 0.1;
     const shape = nextPiece.shape;
     
     // Центрируем фигуру
-    const offsetX = (nextCanvas.width - shape[0].length * cellSize) / 2;
-    const offsetY = (nextCanvas.height - shape.length * cellSize) / 2;
+    const offsetX = (canvasWidth - shape[0].length * cellSize) / 2;
+    const offsetY = (canvasHeight - shape.length * cellSize) / 2;
     
-    nextCtx.save();
-    nextCtx.shadowBlur = 10;
-    nextCtx.shadowColor = `${nextPiece.color}80`;
-    nextCtx.fillStyle = nextPiece.color;
+    context.save();
+    context.shadowBlur = 10;
+    context.shadowColor = `${nextPiece.color}80`;
+    context.fillStyle = nextPiece.color;
     
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c] !== 0) {
           // Рисуем закругленные блоки как в основной игре
-          nextCtx.beginPath();
-          nextCtx.moveTo(offsetX + c * cellSize + padding + padding, offsetY + r * cellSize + padding);
-          nextCtx.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, 
+          context.beginPath();
+          context.moveTo(offsetX + c * cellSize + padding + padding, offsetY + r * cellSize + padding);
+          context.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, 
                        offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, padding);
-          nextCtx.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, 
+          context.arcTo(offsetX + (c + 1) * cellSize - padding, offsetY + (r + 1) * cellSize - padding, 
                        offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, padding);
-          nextCtx.arcTo(offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, 
+          context.arcTo(offsetX + c * cellSize + padding, offsetY + (r + 1) * cellSize - padding, 
                        offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, padding);
-          nextCtx.arcTo(offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, 
+          context.arcTo(offsetX + c * cellSize + padding, offsetY + r * cellSize + padding, 
                        offsetX + (c + 1) * cellSize - padding, offsetY + r * cellSize + padding, padding);
-          nextCtx.closePath();
-          nextCtx.fill();
+          context.closePath();
+          context.fill();
         }
       }
     }
-    nextCtx.restore();
+    context.restore();
   }
   
   // Рендеринг
   function render() {
     ctx.clearRect(0, 0, W, H);
+    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    mobileNextCtx.clearRect(0, 0, mobileNextCanvas.width, mobileNextCanvas.height);
     
     const cellSize = Math.min(gameWidth / COLS, gameHeight / ROWS);
     const padding = cellSize * 0.1;
@@ -681,7 +705,8 @@
     }
     
     // Рисование следующей фигуры
-    renderNextPiece();
+    renderNextPiece(nextCtx, nextCanvas.width, nextCanvas.height);
+    renderNextPiece(mobileNextCtx, mobileNextCanvas.width, mobileNextCanvas.height);
     
     // Рисование анимаций
     animations.forEach(anim => {

@@ -21,11 +21,24 @@
     </header>
     <div class="game-area">
       <canvas id="canvas"></canvas>
+      <div class="mobile-overlay">
+        <div class="mobile-score">
+          <div class="mobile-score-item">
+            <span class="muted">Счёт</span>
+            <span class="score-big" id="mobileScore">0</span>
+          </div>
+          <div class="mobile-next">
+            <span class="muted">Следующая</span>
+            <canvas id="mobileNextCanvas" width="60" height="60"></canvas>
+          </div>
+        </div>
+      </div>
       <div class="mobile-controls">
         <div class="control-row">
           <button class="control-btn" id="btnLeft">←</button>
-          <button class="control-btn" id="btnDown">↓</button>
+          <button class="control-btn drop-btn" id="btnDrop">↓↓</button>
           <button class="control-btn" id="btnRight">→</button>
+          <button class="control-btn" id="btnDown">↓</button>
           <button class="control-btn" id="btnRotate">↻</button>
         </div>
       </div>
@@ -66,9 +79,10 @@
       <div class="panel">
         <h2>Управление</h2>
         <div class="muted">← → - Движение</div>
-        <div class="muted">↓ - Ускорить</div>
+        <div class="muted">↓↓ - Мгновенный сброс</div>
+        <div class="muted">↓ - Ускорить падение</div>
         <div class="muted">↻ - Поворот</div>
-        <div class="muted">Пробел - Сбросить</div>
+        <div class="muted">Пробел - Мгновенный сброс</div>
       </div>
     </div>
     <footer>
