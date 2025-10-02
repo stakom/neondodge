@@ -13,6 +13,18 @@
   let gameOver = false;
   let soundEnabled = true;
   
+  // Переменные для зажатия кнопок
+  let moveLeftInterval = null;
+  let moveRightInterval = null;
+  let moveDownInterval = null;
+  let moveLeftPressed = false;
+  let moveRightPressed = false;
+  let moveDownPressed = false;
+
+  // Настройки интервалов движения
+  const INITIAL_MOVE_DELAY = 150; // Первое движение через 150мс
+  const REPEAT_MOVE_DELAY = 70;   // Повторные движения каждые 70мс
+  
   // Игровое поле
   const board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
   
@@ -131,6 +143,62 @@
     '#9900ff', // T - фиолетовый
     '#ff0000'  // Z - красный
   ];
+
+  // Функции для зажатия кнопок
+  function startMovingLeft() {
+    if (moveLeftPressed || !running || gameOver || paused) return;
+    moveLeftPressed = true;
+    movePiece(-1, 0);
+    moveLeftInterval = setTimeout(() => {
+      moveLeftInterval = setInterval(() => movePiece(-1, 0), REPEAT_MOVE_DELAY);
+    }, INITIAL_MOVE_DELAY);
+  }
+
+  function stopMovingLeft() {
+    moveLeftPressed = false;
+    clearTimeout(moveLeftInterval);
+    clearInterval(moveLeftInterval);
+    moveLeftInterval = null;
+  }
+
+  function startMovingRight() {
+    if (moveRightPressed || !running || gameOver || paused) return;
+    moveRightPressed = true;
+    movePiece(1, 0);
+    moveRightInterval = setTimeout(() => {
+      moveRightInterval = setInterval(() => movePiece(1, 0), REPEAT_MOVE_DELAY);
+    }, INITIAL_MOVE_DELAY);
+  }
+
+  function stopMovingRight() {
+    moveRightPressed = false;
+    clearTimeout(moveRightInterval);
+    clearInterval(moveRightInterval);
+    moveRightInterval = null;
+  }
+
+  function startMovingDown() {
+    if (moveDownPressed || !running || gameOver || paused) return;
+    moveDownPressed = true;
+    movePiece(0, 1);
+    moveDownInterval = setTimeout(() => {
+      moveDownInterval = setInterval(() => movePiece(0, 1), REPEAT_MOVE_DELAY);
+    }, INITIAL_MOVE_DELAY);
+  }
+
+  function stopMovingDown() {
+    moveDownPressed = false;
+    clearTimeout(moveDownInterval);
+    clearInterval(moveDownInterval);
+    moveDownInterval = null;
+  }
+
+  // Остановка всех движений при паузе или завершении игры
+  function stopAllMovements() {
+    stopMovingLeft();
+    stopMovingRight();
+    stopMovingDown();
+  }
   
   // Инициализация звуков
   function initSounds() {
@@ -491,39 +559,64 @@
   
   // Обработчики для мобильных кнопок
   function setupMobileControls() {
+    // Левый контрол
     if (btnLeft) {
-      btnLeft.addEventListener('touchstart', (e) => {
+      const startLeft = (e) => {
         e.preventDefault();
-        movePiece(-1, 0);
-      });
-      btnLeft.addEventListener('mousedown', (e) => {
+        startMovingLeft();
+      };
+      const stopLeft = (e) => {
         e.preventDefault();
-        movePiece(-1, 0);
-      });
+        stopMovingLeft();
+      };
+      
+      btnLeft.addEventListener('touchstart', startLeft);
+      btnLeft.addEventListener('mousedown', startLeft);
+      btnLeft.addEventListener('touchend', stopLeft);
+      btnLeft.addEventListener('touchcancel', stopLeft);
+      btnLeft.addEventListener('mouseup', stopLeft);
+      btnLeft.addEventListener('mouseleave', stopLeft);
     }
     
+    // Правый контрол
     if (btnRight) {
-      btnRight.addEventListener('touchstart', (e) => {
+      const startRight = (e) => {
         e.preventDefault();
-        movePiece(1, 0);
-      });
-      btnRight.addEventListener('mousedown', (e) => {
+        startMovingRight();
+      };
+      const stopRight = (e) => {
         e.preventDefault();
-        movePiece(1, 0);
-      });
+        stopMovingRight();
+      };
+      
+      btnRight.addEventListener('touchstart', startRight);
+      btnRight.addEventListener('mousedown', startRight);
+      btnRight.addEventListener('touchend', stopRight);
+      btnRight.addEventListener('touchcancel', stopRight);
+      btnRight.addEventListener('mouseup', stopRight);
+      btnRight.addEventListener('mouseleave', stopRight);
     }
     
+    // Вниз контрол
     if (btnDown) {
-      btnDown.addEventListener('touchstart', (e) => {
+      const startDown = (e) => {
         e.preventDefault();
-        movePiece(0, 1);
-      });
-      btnDown.addEventListener('mousedown', (e) => {
+        startMovingDown();
+      };
+      const stopDown = (e) => {
         e.preventDefault();
-        movePiece(0, 1);
-      });
+        stopMovingDown();
+      };
+      
+      btnDown.addEventListener('touchstart', startDown);
+      btnDown.addEventListener('mousedown', startDown);
+      btnDown.addEventListener('touchend', stopDown);
+      btnDown.addEventListener('touchcancel', stopDown);
+      btnDown.addEventListener('mouseup', stopDown);
+      btnDown.addEventListener('mouseleave', stopDown);
     }
     
+    // Мгновенный сброс (без зажатия)
     if (btnDrop) {
       btnDrop.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -535,6 +628,7 @@
       });
     }
     
+    // Поворот (без зажатия)
     if (btnRotate) {
       btnRotate.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -546,6 +640,7 @@
       });
     }
     
+    // Остальные кнопки
     if (mobileBtnStart) {
       mobileBtnStart.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -587,15 +682,15 @@
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
-        movePiece(-1, 0);
+        startMovingLeft();
         break;
       case 'ArrowRight':
         e.preventDefault();
-        movePiece(1, 0);
+        startMovingRight();
         break;
       case 'ArrowDown':
         e.preventDefault();
-        movePiece(0, 1);
+        startMovingDown();
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -613,6 +708,24 @@
       case 'Escape':
         e.preventDefault();
         togglePause();
+        break;
+    }
+  });
+
+  // Обработчики отпускания клавиш
+  document.addEventListener('keyup', e => {
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        stopMovingLeft();
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        stopMovingRight();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        stopMovingDown();
         break;
     }
   });
@@ -640,6 +753,11 @@
     btnPause.textContent = paused ? '▶ Продолжить' : '⏸ Пауза';
     if (mobileBtnPause) {
       mobileBtnPause.textContent = paused ? '▶ Продолж' : '⏸ Пауза';
+    }
+    
+    // Останавливаем все движения при паузе
+    if (paused) {
+      stopAllMovements();
     }
   }
   
@@ -670,6 +788,9 @@
   
   // Сброс игры
   function resetGame() {
+    // Останавливаем все движения
+    stopAllMovements();
+    
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         board[r][c] = 0;

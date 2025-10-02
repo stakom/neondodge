@@ -120,7 +120,7 @@ class ChaosGenerator {
         this.currentLine = {
             points: [pos],
             color: `rgba(255, 255, 255, 0.9)`,
-            width: this.isMobile() ? 4 : 3
+            width: this.isMobile() ? 8 : 6 // Увеличена толщина линий
         };
     }
 
@@ -525,13 +525,16 @@ class ChaosGenerator {
         
         const distance = this.pointToLineDistance(ball.x, ball.y, p1.x, p1.y, p2.x, p2.y);
         
-        if (distance < ball.radius) {
-            const pushDistance = ball.radius - distance + 0.1;
+        // Увеличиваем зону коллизии с учетом толщины линии
+        const collisionBuffer = ball.radius + 3; // +3 пикселя для учета толщины линии
+        
+        if (distance < collisionBuffer) {
+            const pushDistance = collisionBuffer - distance + 0.1;
             ball.x += normal.x * pushDistance;
             ball.y += normal.y * pushDistance;
             
             const newDistance = this.pointToLineDistance(ball.x, ball.y, p1.x, p1.y, p2.x, p2.y);
-            if (newDistance < ball.radius) {
+            if (newDistance < collisionBuffer) {
                 ball.x = oldX;
                 ball.y = oldY;
             }
@@ -596,7 +599,8 @@ class ChaosGenerator {
         
         const distance = Math.sqrt((circle.x - closestX) ** 2 + (circle.y - closestY) ** 2);
         
-        return distance <= circle.radius + 1;
+        // Увеличиваем зону коллизии для более надежного обнаружения
+        return distance <= circle.radius + 4; // +4 пикселя вместо +1
     }
 
     pointOnLineSegment(p1, p2, point) {
@@ -627,6 +631,10 @@ class ChaosGenerator {
         
         ball.vx *= bounceFactor;
         ball.vy *= bounceFactor;
+        
+        // Дополнительный толчок от линии для предотвращения залипания
+        ball.x += normal.x * 2;
+        ball.y += normal.y * 2;
     }
 
     endGame(playerWon) {
@@ -682,6 +690,7 @@ class ChaosGenerator {
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
+        // Рисуем линии с увеличенной толщиной
         this.lines.forEach(line => {
             this.ctx.beginPath();
             this.ctx.moveTo(line.points[0].x, line.points[0].y);
@@ -691,6 +700,12 @@ class ChaosGenerator {
             this.ctx.strokeStyle = line.color;
             this.ctx.lineWidth = line.width;
             this.ctx.stroke();
+            
+            // Добавляем небольшое свечение для лучшей видимости
+            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.shadowBlur = 4;
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
         });
 
         if (this.currentLine && this.currentLine.points.length > 1) {
@@ -702,6 +717,12 @@ class ChaosGenerator {
             this.ctx.strokeStyle = this.currentLine.color;
             this.ctx.lineWidth = this.currentLine.width;
             this.ctx.stroke();
+            
+            // Свечение для текущей линии
+            this.ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+            this.ctx.shadowBlur = 6;
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
         }
 
         this.balls.forEach(ball => {
