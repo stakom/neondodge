@@ -21,14 +21,14 @@
 body {
     background: var(--primary-bg);
     color: var(--text-light);
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-y: auto; /* Разрешаем скролл */
 }
 
 .game-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
     padding: 10px;
     gap: 10px;
     max-width: 1400px;
@@ -832,28 +832,55 @@ body {
     background: #2980b9;
 }
 
-/* Адаптивность для мобильных */
+/* ============= МОБИЛЬНАЯ ВЕРСИЯ ============= */
 @media (max-width: 768px) {
     .game-container {
         padding: 5px;
         gap: 5px;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible; /* Убираем скрытие overflow */
     }
 
+    body {
+        overflow-y: auto; /* Разрешаем скролл */
+        height: auto;
+    }
+
+    /* ==== ИСПРАВЛЕННАЯ ПАНЕЛЬ СТАТУСА ==== */
     .status-bar {
         padding: 6px 8px;
+        /* Закрепление вверху на ВСЕ ВРЕМЯ */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        /* Улучшаем видимость */
+        background: var(--secondary-bg);
+        border-bottom: 2px solid var(--border-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        margin: 0;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    /* Добавляем отступ для контента, чтобы он не скрывался под панелью */
+    .main-content {
+        margin-top: 60px; /* Отступ равный высоте панели статуса */
     }
     
     .resource {
-        min-width: 60px;
+        min-width: 55px;
         padding: 4px 6px;
     }
     
     .resource-icon {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
     }
     
     .resource-value {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
     
     .resource-name {
@@ -862,7 +889,7 @@ body {
 
     .main-content {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
+        grid-template-rows: auto auto;
     }
 
     .side-panel {
@@ -935,14 +962,32 @@ body {
 }
 
 @media (max-width: 480px) {
+    /* Уменьшаем панель статуса еще больше для очень маленьких экранов */
     .status-bar {
-        flex-wrap: wrap;
-        gap: 5px;
+        padding: 5px 6px;
+        height: 50px; /* Фиксированная высота */
     }
     
     .resource {
         min-width: 45px;
         padding: 3px 4px;
+    }
+    
+    .resource-icon {
+        font-size: 0.85rem;
+    }
+    
+    .resource-value {
+        font-size: 0.8rem;
+    }
+    
+    .resource-name {
+        font-size: 0.65rem;
+    }
+    
+    /* Уменьшаем отступ для контента */
+    .main-content {
+        margin-top: 50px;
     }
 
     .player-hand {
@@ -954,9 +999,30 @@ body {
         min-height: 100px;
         padding: 10px;
     }
+}
 
+/* Для горизонтальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+    .status-bar {
+        padding: 4px 6px;
+        height: 45px;
+    }
+    
+    .resource {
+        min-width: 40px;
+        padding: 2px 3px;
+    }
+    
+    .resource-icon {
+        font-size: 0.8rem;
+    }
+    
     .resource-value {
-        font-size: 1.2rem;
+        font-size: 0.75rem;
+    }
+    
+    .main-content {
+        margin-top: 45px;
     }
 }
 
@@ -1001,6 +1067,7 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
 }
+
 /* ДОПОЛНЕНИЕ К СУЩЕСТВУЮЩЕМУ CSS - АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ */
 
 @media (max-width: 768px) {
@@ -1035,18 +1102,21 @@ body {
         padding: 15px;
     }
 
-    /* Улучшаем статус бар для мобильных */
+    /* Улучшаем статус бар для мобильных - ИСПРАВЛЕННЫЙ ВАРИАНТ */
     .status-bar {
         flex-wrap: wrap;
         justify-content: center;
         padding: 8px 5px;
         gap: 10px;
-        border-radius: 10px;
-        position: sticky;
+        border-radius: 0 0 10px 10px;
+        position: fixed;
         top: 0;
-        z-index: 100;
+        left: 0;
+        right: 0;
+        z-index: 1000;
         background: var(--secondary-bg);
-        margin: 0 0 10px 0;
+        margin: 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
     .resource {
@@ -1262,7 +1332,7 @@ body {
         max-width: none;
         left: 10px;
         right: 10px;
-        top: 10px;
+        top: 60px; /* Учитываем панель статуса */
     }
 
     .notification {
@@ -1292,6 +1362,7 @@ body {
     .status-bar {
         gap: 8px;
         padding: 6px 4px;
+        height: 48px;
     }
 
     .resource {
@@ -1553,5 +1624,144 @@ body {
     
     .nav-text {
         font-size: 0.6rem;
+    }
+}
+/* ============= МОБИЛЬНАЯ ВЕРСИЯ ============= */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 5px;
+        gap: 5px;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    /* ==== КОМПАКТНАЯ ПАНЕЛЬ СТАТУСА ==== */
+    .status-bar {
+        padding: 4px 5px;
+        height: 45px; /* Уменьшили высоту */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--secondary-bg);
+        border-bottom: 2px solid var(--border-color);
+        margin: 0;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .resource {
+        min-width: auto;
+        padding: 3px 4px;
+        flex: 1;
+        margin: 0 2px;
+    }
+    
+    .resource-icon {
+        font-size: 0.8rem;
+        margin-bottom: 1px;
+    }
+    
+    .resource-value {
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .resource-name {
+        font-size: 0.55rem; /* Еще меньше */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    /* Добавляем отступ для контента */
+    .main-content {
+        margin-top: 45px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+    
+    /* Остальные стили... */
+}
+
+@media (max-width: 480px) {
+    /* Еще более компактная версия для маленьких экранов */
+    .status-bar {
+        padding: 3px 4px;
+        height: 40px;
+    }
+    
+    .resource {
+        padding: 2px 3px;
+        min-width: 35px;
+    }
+    
+    .resource-icon {
+        font-size: 0.7rem;
+        margin-bottom: 0;
+    }
+    
+    .resource-value {
+        font-size: 0.7rem;
+    }
+    
+    .resource-name {
+        font-size: 0.5rem;
+    }
+    
+    .main-content {
+        margin-top: 40px;
+    }
+}
+
+@media (max-width: 400px) {
+    /* Для очень узких экранов */
+    .resource-name {
+        font-size: 0.45rem;
+    }
+    
+    .resource-value {
+        font-size: 0.65rem;
+    }
+    
+    .resource-icon {
+        font-size: 0.65rem;
+    }
+}
+
+/* Для горизонтальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+    .status-bar {
+        padding: 3px 4px;
+        height: 40px;
+    }
+    
+    .resource {
+        min-width: 35px;
+        padding: 2px 3px;
+    }
+    
+    .resource-icon {
+        font-size: 0.7rem;
+    }
+    
+    .resource-value {
+        font-size: 0.7rem;
+    }
+    
+    .main-content {
+        margin-top: 40px;
     }
 }
