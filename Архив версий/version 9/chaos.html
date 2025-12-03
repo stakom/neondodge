@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казино Плинко</title>
+    <link rel="stylesheet" href="chaos.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="shell">
+        <header>
+            <a href="#" class="logo">Stakom</a>
+            <div class="brand">
+                <div class="game-logo">PK</div>
+                <div>
+                    <h1>Казино Плинко</h1>
+                    <div class="subtitle">Шарики падают и отскакивают от штифтов</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <div class="ui">
+            <div class="panel balance">
+                <h2>Баланс</h2>
+                <div class="score-row">
+                    <span id="balanceAmount">1000</span> ₽
+                </div>
+                <div class="controls">
+                    <button id="btnAddMoney" class="btn">+ Пополнить</button>
+                    <button id="btnReset" class="btn">🔄 Сбросить</button>
+                </div>
+            </div>
+
+            <div class="panel bet">
+                <h2>Ставка</h2>
+                <div class="controls">
+                    <button id="btnBetDown" class="btn">-</button>
+                    <span id="betAmount">10</span>
+                    <button id="btnBetUp" class="btn">+</button>
+                </div>
+                <div class="controls">
+                    <button class="btn bet-preset" data-bet="10">10</button>
+                    <button class="btn bet-preset" data-bet="50">50</button>
+                    <button class="btn bet-preset" data-bet="100">100</button>
+                </div>
+            </div>
+
+            <div class="panel controls-panel">
+                <h2>Управление</h2>
+                <div class="controls">
+                    <button id="btnDropBall" class="btn primary">🎲 Бросить шар</button>
+                    <button id="btnAuto" class="btn">⚡ Авто-игра</button>
+                </div>
+                <div id="autoControls" style="display: none;">
+                    <label>Скорость: <input type="range" id="autoSpeed" min="1" max="10" value="3"></label>
+                    <button id="btnStopAuto" class="btn">⏹️ Стоп</button>
+                </div>
+            </div>
+
+            <div class="panel wins">
+                <h2>Выигрыши</h2>
+                <div class="slots">
+                    <div class="slot">x0</div>
+                    <div class="slot">x0.5</div>
+                    <div class="slot">x1</div>
+                    <div class="slot">x2</div>
+                    <div class="slot">x5</div>
+                    <div class="slot">x2</div>
+                    <div class="slot">x1</div>
+                    <div class="slot">x0.5</div>
+                    <div class="slot">x0</div>
+                </div>
+                <div id="lastResult" class="last-result">Ожидание игры...</div>
+            </div>
+
+            <div class="panel stats">
+                <h2>Статистика</h2>
+                <div class="score-row">
+                    <span>Всего игр:</span>
+                    <span id="totalGames">0</span>
+                </div>
+                <div class="score-row">
+                    <span>Побед:</span>
+                    <span id="wins">0</span>
+                </div>
+                <div class="score-row">
+                    <span>Процент побед:</span>
+                    <span id="winRate">0%</span>
+                </div>
+                <div class="score-row">
+                    <span>Крупнейший выигрыш:</span>
+                    <span id="biggestWin">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Разработчик: stakom | Telegram: @stakomoto | Создано в 2025 году
+    </footer>
+
+    <script src="chaos.js"></script>
+</body>
+</html>

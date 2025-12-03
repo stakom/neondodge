@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stakom - Световые последовательности</title>
+    <link rel="stylesheet" href="color.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%23ff6f61'>S</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <a href="index.html" class="logo">Stakom</a>
+                <div class="game-logo">🎨</div>
+            </div>
+            <div class="header-text">
+                <h1>Color Sequence</h1>
+                <div class="subtitle">Запоминайте и повторяйте световые последовательности</div>
+            </div>
+        </header>
+
+        <main class="game-area">
+            <div class="lights-grid">
+                <div class="light red" data-color="red"></div>
+                <div class="light blue" data-color="blue"></div>
+                <div class="light green" data-color="green"></div>
+                <div class="light yellow" data-color="yellow"></div>
+            </div>
+            
+            <div class="game-status">
+                <div class="status-text" id="statusText">Нажмите СТАРТ для начала игры</div>
+                <div class="level-info">
+                    Уровень: <span id="level">1</span> | 
+                    Последовательность: <span id="sequenceLength">1</span>
+                </div>
+            </div>
+        </main>
+
+        <div class="ui-panel">
+            <div class="panel-section">
+                <h2>Управление</h2>
+                <div class="controls">
+                    <button id="btnStart" class="btn primary">▶ Старт</button>
+                    <button id="btnReset" class="btn">🔄 Сброс</button>
+                    <a href="index.html"><button class="btn">↩ В меню</button></a>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h2>Счёт</h2>
+                <div class="score-display">
+                    <div class="score-row">
+                        <span>Текущий счёт:</span>
+                        <span id="currentScore">0</span>
+                    </div>
+                    <div class="score-row">
+                        <span>Рекорд:</span>
+                        <span id="bestScore">0</span>
+                    </div>
+                    <div class="score-row">
+                        <span>Макс. уровень:</span>
+                        <span id="maxLevel">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h2>Как играть?</h2>
+                <div class="instructions">
+                    <p>1. Нажмите СТАРТ</p>
+                    <p>2. Запомните последовательность цветов</p>
+                    <p>3. Повторите её в том же порядке</p>
+                    <p>4. С каждым уровнем последовательность удлиняется</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+        </footer>
+    </div>
+
+    <script src="color.js"></script>
+</body>
+</html>

@@ -1,0 +1,1557 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+    --primary-bg: #1a2b3c;
+    --secondary-bg: #2c3e50;
+    --accent-blue: #3498db;
+    --accent-green: #2ecc71;
+    --accent-red: #e74c3c;
+    --accent-purple: #9b59b6;
+    --accent-orange: #f39c12;
+    --text-light: #ecf0f1;
+    --text-muted: #bdc3c7;
+    --border-color: #34495e;
+}
+
+body {
+    background: var(--primary-bg);
+    color: var(--text-light);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px;
+    gap: 10px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Обучение */
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+    padding: 20px;
+}
+
+.tutorial-content {
+    background: var(--secondary-bg);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.tutorial-steps {
+    margin: 20px 0;
+}
+
+.tutorial-step {
+    display: none;
+}
+
+.tutorial-step.active {
+    display: block;
+}
+
+.tutorial-step p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.tutorial-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.tutorial-progress {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Упрощенная панель статуса */
+.status-bar {
+    display: flex;
+    justify-content: space-around;
+    background: var(--secondary-bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+
+.resource {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 70px;
+}
+
+.resource:hover {
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+}
+
+.resource-icon {
+    font-size: 1.2rem;
+    margin-bottom: 3px;
+}
+
+.resource-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent-blue);
+    margin-bottom: 2px;
+}
+
+.resource-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Основной контент */
+.main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Игровое поле */
+.game-field {
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.turn-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-end-turn {
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-end-turn:hover {
+    background: #e67e22;
+}
+
+/* Проблемы */
+.problem-area {
+    margin-bottom: 25px;
+}
+
+.problem-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.problem-slot {
+    background: linear-gradient(135deg, var(--accent-red), #c0392b);
+    border: 2px solid #b03a2e;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 80px;
+}
+
+.problem-slot.empty {
+    background: #34495e;
+    border: 2px dashed var(--border-color);
+    color: var(--text-muted);
+}
+
+.problem-icon {
+    font-size: 1.8rem;
+}
+
+.problem-info {
+    flex: 1;
+}
+
+.problem-title {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.problem-effect {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Область карт и действий */
+.cards-actions-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.cards-area {
+    flex: 1;
+}
+
+.player-hand {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+/* Карты */
+.card {
+    background: linear-gradient(135deg, var(--accent-blue), #2980b9);
+    border-radius: 10px;
+    padding: 15px;
+    border: 2px solid #467c9b;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+}
+
+.card-cost {
+    background: rgba(0,0,0,0.4);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    align-self: flex-start;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin: 8px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.card-description {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    line-height: 1.3;
+}
+
+/* Специальные действия - минималистичный стиль */
+.actions-area {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    background: var(--secondary-bg);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.actions-area h4 {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #34495e;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+    color: var(--text-light);
+}
+
+.action-btn:hover:not(:disabled) {
+    background: #3a506b;
+    border-color: var(--accent-blue);
+}
+
+.action-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.action-text {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.action-cost {
+    background: var(--accent-purple);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    min-width: 45px;
+    text-align: center;
+}
+
+/* Боковая панель */
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 0;
+}
+
+/* Навигация */
+.nav-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: var(--secondary-bg);
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+}
+
+.nav-btn {
+    background: #34495e;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-light);
+}
+
+.nav-btn:hover {
+    background: #3a506b;
+    transform: translateY(-2px);
+}
+
+.nav-btn.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.nav-icon {
+    font-size: 1.4rem;
+}
+
+.nav-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Контент панели */
+.panel-content {
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    flex: 1;
+    overflow-y: auto;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.level-info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Прогресс уровня */
+.level-progress {
+    margin-bottom: 20px;
+}
+
+.level-bar {
+    height: 8px;
+    background: #34495e;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.level-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Задачи */
+.quests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quest-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid var(--accent-blue);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.quest-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+
+.quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.quest-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.quest-reward {
+    background: var(--accent-orange);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.quest-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.quest-progress-bar {
+    height: 4px;
+    background: #34495e;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 5px 0;
+}
+
+.quest-progress-fill {
+    height: 100%;
+    background: var(--accent-green);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.quest-progress-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* Достижения */
+.achievements-count {
+    background: var(--accent-purple);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.achievement-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.achievement-item.unlocked {
+    border-left: 4px solid var(--accent-green);
+}
+
+.achievement-item.locked {
+    opacity: 0.5;
+    border-left: 4px solid var(--border-color);
+}
+
+.achievement-icon {
+    font-size: 1.8rem;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.achievement-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Статистика */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-item {
+    background: #34495e;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--accent-blue);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.game-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-control {
+    background: #34495e;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.3s;
+}
+
+.btn-control:hover {
+    background: #3a506b;
+    transform: translateY(-2px);
+}
+
+/* Кнопки */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.btn-secondary {
+    background: #34495e;
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+}
+
+.btn-skip {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Уведомления */
+.notification-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 300px;
+    max-width: 90vw;
+    z-index: 2000;
+}
+
+.notification {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    border-left: 4px solid var(--accent-blue);
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease-out;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.notification.success { border-left-color: var(--accent-green); }
+.notification.warning { border-left-color: var(--accent-orange); }
+.notification.error { border-left-color: var(--accent-red); }
+
+.notification.with-image {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+}
+
+.notification-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--accent-blue);
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Модальное окно */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2500;
+    padding: 20px;
+}
+
+.modal-content {
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-close {
+    background: transparent;
+    color: var(--text-light);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Стили для разных редкостей карт */
+.card.common {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: 2px solid #467c9b;
+}
+
+.card.rare {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    border: 2px solid #7d3c98;
+}
+
+.card.epic {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: 2px solid #b03a2e;
+}
+
+.card.legendary {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    border: 2px solid #d68910;
+}
+
+/* Полоса прокрутки для руки */
+.player-hand::-webkit-scrollbar {
+    width: 8px;
+}
+
+.player-hand::-webkit-scrollbar-track {
+    background: #34495e;
+    border-radius: 4px;
+}
+
+.player-hand::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 4px;
+}
+
+.player-hand::-webkit-scrollbar-thumb:hover {
+    background: #2980b9;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 5px;
+        gap: 5px;
+    }
+
+    .status-bar {
+        padding: 6px 8px;
+    }
+    
+    .resource {
+        min-width: 60px;
+        padding: 4px 6px;
+    }
+    
+    .resource-icon {
+        font-size: 1rem;
+    }
+    
+    .resource-value {
+        font-size: 0.9rem;
+    }
+    
+    .resource-name {
+        font-size: 0.7rem;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .side-panel {
+        order: -1;
+    }
+
+    .cards-actions-section {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .nav-panel {
+        grid-template-columns: repeat(3, 1fr);
+        padding: 8px;
+        gap: 5px;
+    }
+
+    .nav-btn {
+        padding: 8px 4px;
+    }
+
+    .nav-icon {
+        font-size: 1.2rem;
+    }
+
+    .nav-text {
+        font-size: 0.7rem;
+    }
+
+    .player-hand {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        max-height: 250px;
+    }
+
+    .problem-slots {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .game-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .action-btn {
+        padding: 10px 12px;
+    }
+    
+    .action-text {
+        font-size: 0.85rem;
+    }
+
+    .notification.with-image {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .notification-image {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-bar {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .resource {
+        min-width: 45px;
+        padding: 3px 4px;
+    }
+
+    .player-hand {
+        grid-template-columns: 1fr 1fr;
+        max-height: 200px;
+    }
+
+    .card {
+        min-height: 100px;
+        padding: 10px;
+    }
+
+    .resource-value {
+        font-size: 1.2rem;
+    }
+}
+
+/* Улучшения для touch устройств */
+@media (hover: none) and (pointer: coarse) {
+    .card:hover {
+        transform: none;
+    }
+
+    .resource:hover {
+        transform: none;
+    }
+
+    .nav-btn:hover {
+        transform: none;
+    }
+
+    .action-btn:hover {
+        transform: none;
+    }
+
+    .btn-control:hover {
+        transform: none;
+    }
+
+    .card:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Запрет выделения текста на картах */
+.card {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.card * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+/* ДОПОЛНЕНИЕ К СУЩЕСТВУЮЩЕМУ CSS - АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ */
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 5px;
+        gap: 8px;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        height: auto;
+    }
+
+    .side-panel {
+        order: 1;
+        height: auto;
+    }
+
+    .game-field {
+        order: 2;
+        height: auto;
+        padding: 15px;
+    }
+
+    /* Улучшаем статус бар для мобильных */
+    .status-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px 5px;
+        gap: 10px;
+        border-radius: 10px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--secondary-bg);
+        margin: 0 0 10px 0;
+    }
+
+    .resource {
+        min-width: 65px;
+        padding: 6px 4px;
+        flex: 1;
+        max-width: 80px;
+    }
+
+    .resource-icon {
+        font-size: 1.1rem;
+    }
+
+    .resource-value {
+        font-size: 0.95rem;
+        font-weight: bold;
+    }
+
+    .resource-name {
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+
+    /* Улучшаем заголовок стола */
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .turn-info {
+        width: 100%;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+
+    .btn-end-turn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* Улучшаем отображение проблем */
+    .problem-slots {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .problem-slot {
+        min-height: 70px;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .problem-icon {
+        font-size: 1.5rem;
+    }
+
+    .problem-title {
+        font-size: 0.9rem;
+    }
+
+    .problem-effect {
+        font-size: 0.8rem;
+    }
+
+    /* Улучшаем карты и действия */
+    .cards-actions-section {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .player-hand {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        max-height: 200px;
+        padding: 5px 0;
+    }
+
+    .card {
+        min-height: 110px;
+        padding: 12px 10px;
+    }
+
+    .card-cost {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+        margin: 6px 0;
+    }
+
+    .card-description {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    /* Улучшаем специальные действия */
+    .actions-area {
+        padding: 12px;
+    }
+
+    .actions-area h4 {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    .actions-list {
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .action-icon {
+        font-size: 1.2rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .action-text {
+        font-size: 0.85rem;
+    }
+
+    .action-cost {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+        min-width: 40px;
+    }
+
+    /* Улучшаем боковую панель */
+    .nav-panel {
+        padding: 8px;
+        gap: 6px;
+        border-radius: 10px;
+    }
+
+    .nav-btn {
+        padding: 8px 4px;
+        border-radius: 6px;
+    }
+
+    .nav-icon {
+        font-size: 1.1rem;
+    }
+
+    .nav-text {
+        font-size: 0.7rem;
+    }
+
+    .panel-content {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .level-info {
+        font-size: 0.85rem;
+    }
+
+    /* Улучшаем задачи */
+    .quest-item {
+        padding: 12px;
+    }
+
+    .quest-title {
+        font-size: 0.9rem;
+    }
+
+    .quest-description {
+        font-size: 0.8rem;
+    }
+
+    /* Улучшаем статистику */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-item {
+        padding: 12px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .game-controls {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .btn-control {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Улучшаем уведомления для мобильных */
+    .notification-panel {
+        width: calc(100% - 20px);
+        max-width: none;
+        left: 10px;
+        right: 10px;
+        top: 10px;
+    }
+
+    .notification {
+        font-size: 0.85rem;
+        padding: 10px;
+        margin-bottom: 5px;
+    }
+
+    .notification.with-image {
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+    }
+
+    .notification-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-container {
+        padding: 4px;
+        gap: 6px;
+    }
+
+    .status-bar {
+        gap: 8px;
+        padding: 6px 4px;
+    }
+
+    .resource {
+        min-width: 55px;
+        padding: 4px 3px;
+        max-width: 70px;
+    }
+
+    .resource-icon {
+        font-size: 1rem;
+    }
+
+    .resource-value {
+        font-size: 0.9rem;
+    }
+
+    .resource-name {
+        font-size: 0.65rem;
+    }
+
+    .table-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .btn-end-turn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Улучшаем карты для маленьких экранов */
+    .player-hand {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        max-height: 180px;
+    }
+
+    .card {
+        min-height: 100px;
+        padding: 10px 8px;
+    }
+
+    .card-title {
+        font-size: 0.85rem;
+        margin: 4px 0;
+    }
+
+    .card-description {
+        font-size: 0.7rem;
+    }
+
+    /* Улучшаем специальные действия */
+    .actions-area {
+        padding: 10px;
+    }
+
+    .action-btn {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .action-icon {
+        font-size: 1.1rem;
+        width: 28px;
+        height: 28px;
+    }
+
+    .action-text {
+        font-size: 0.8rem;
+    }
+
+    .action-cost {
+        font-size: 0.7rem;
+        padding: 2px 5px;
+        min-width: 35px;
+    }
+
+    /* Улучшаем навигацию */
+    .nav-panel {
+        padding: 6px;
+        gap: 4px;
+    }
+
+    .nav-btn {
+        padding: 6px 2px;
+    }
+
+    .nav-icon {
+        font-size: 1rem;
+    }
+
+    .nav-text {
+        font-size: 0.65rem;
+    }
+
+    /* Улучшаем статистику */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .game-controls {
+        grid-template-columns: 1fr;
+    }
+
+    /* Проблемы на очень маленьких экранах */
+    .problem-slot {
+        min-height: 65px;
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .problem-icon {
+        font-size: 1.3rem;
+    }
+
+    .problem-title {
+        font-size: 0.85rem;
+    }
+
+    /* Улучшаем модальные окна */
+    .modal-content {
+        padding: 20px 15px;
+        margin: 10px;
+    }
+}
+
+/* Особые стили для вертикальной ориентации */
+@media (max-width: 768px) and (orientation: portrait) {
+    .game-container {
+        padding: 5px 3px;
+    }
+
+    .player-hand {
+        max-height: 160px;
+    }
+
+    .cards-area h4,
+    .actions-area h4,
+    .problem-area h4 {
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+}
+
+/* Особые стили для горизонтальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+    .main-content {
+        grid-template-columns: 1.5fr 1fr;
+        grid-template-rows: 1fr;
+    }
+    
+    .side-panel {
+        order: 2;
+    }
+    
+    .game-field {
+        order: 1;
+    }
+    
+    .player-hand {
+        max-height: 150px;
+    }
+    
+    .cards-actions-section {
+        grid-template-columns: 2fr 1fr;
+        gap: 15px;
+    }
+}
+
+/* Фикс для Safari на iOS */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+        .game-container {
+            height: -webkit-fill-available;
+            min-height: -webkit-fill-available;
+        }
+        
+        body {
+            height: -webkit-fill-available;
+        }
+    }
+}
+
+/* Улучшение touch-интерфейса */
+@media (hover: none) and (pointer: coarse) {
+    .card {
+        min-height: 105px;
+    }
+    
+    .action-btn,
+    .nav-btn,
+    .btn-control,
+    .quest-item,
+    .achievement-item {
+        min-height: 44px; /* Минимальная высота для удобного касания */
+    }
+    
+    .btn-end-turn {
+        min-height: 40px;
+        min-width: 120px;
+    }
+    
+    /* Увеличиваем область клика для мобильных */
+    .resource {
+        padding: 8px 6px;
+    }
+    
+    /* Убираем hover-эффекты, заменяем на active */
+    .card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s;
+    }
+    
+    .action-btn:active:not(:disabled) {
+        background: #3a506b;
+        transform: scale(0.98);
+    }
+    
+    .nav-btn:active {
+        background: var(--accent-blue);
+        transform: scale(0.98);
+    }
+    
+    .btn-control:active {
+        background: #3a506b;
+        transform: scale(0.98);
+    }
+}
+
+/* Фикс для скролла на мобильных */
+@media (max-width: 768px) {
+    .player-hand,
+    .panel-content {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .player-hand::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+}
+
+/* Адаптация текста для очень маленьких экранов */
+@media (max-width: 360px) {
+    .resource-name {
+        font-size: 0.6rem;
+    }
+    
+    .card-title {
+        font-size: 0.8rem;
+    }
+    
+    .card-description {
+        font-size: 0.65rem;
+    }
+    
+    .action-text {
+        font-size: 0.75rem;
+    }
+    
+    .nav-text {
+        font-size: 0.6rem;
+    }
+}

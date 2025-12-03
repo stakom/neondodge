@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>2048</title>
+  <link rel="stylesheet" href="neon.css">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="index.html" class="logo">Stakom</a>
+      <div class="brand">
+        <div class="game-logo">2048</div>
+        <div>
+          <h1>2048</h1>
+          <div class="subtitle">Классическая головоломка: объединяйте плитки до 2048</div>
+        </div>
+      </div>
+    </header>
+    <div class="card">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="ui">
+      <div class="panel">
+        <h2>Счёт</h2>
+        <div class="score-row">
+          <span class="muted">Текущий</span>
+          <span id="score" class="score-big">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Рекорд</span>
+          <span id="best" class="score-big">0</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Управление</h2>
+        <div class="muted">Клавиши: ↑ ↓ ← → или W A S D</div>
+        <div class="muted">Мобильные: свайпы вверх/вниз/влево/вправо</div>
+      </div>
+      <div class="panel">
+        <div class="controls">
+          <button id="restartBtn" class="btn primary">Рестарт</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Подсказки</h2>
+        <div class="muted">Объединяйте одинаковые числа. Цель — 2048. Игра сохраняется автоматически.</div>
+      </div>
+    </div>
+    <footer>
+      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+    </footer>
+  </div>
+  <script src="neon.js"></script>
+</body>
+</html>

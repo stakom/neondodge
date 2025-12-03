@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Stakom</title>
+  <link rel="stylesheet" href="blockblast.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%23ff6f61'>S</text></svg>">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <a href="index.html" class="logo">Stakom</a>
+        <div class="game-logo">🔷</div>
+      </div>
+      <div>
+        <h1>Block Blast</h1>
+        <div class="subtitle muted">Простая головоломка: размещайте блоки, очищайте линии</div>
+      </div>
+    </header>
+    <canvas id="canvas"></canvas>
+    <div class="ui">
+      <div class="panel">
+        <h2>Игра</h2>
+        <div class="muted">Размещайте блоки, чтобы очистить линии</div>
+        <div class="controls">
+          <button id="btnStart" class="btn primary">▶ Старт</button>
+          <a href="index.html"><button id="btnBack" class="btn">↩ В меню</button></a>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Счёт</h2>
+        <div class="score-row">
+          <span class="muted">Счёт</span>
+          <span class="score-big" id="score">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Рекорд</span>
+          <span class="score-big" id="best">0</span>
+        </div>
+      </div>
+    </div>
+    <footer>
+      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+    </footer>
+  </div>
+  <script src="blockblast.js"></script>
+</body>
+</html>

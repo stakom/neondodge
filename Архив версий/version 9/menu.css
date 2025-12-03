@@ -1,0 +1,381 @@
+:root {
+  --bg: #050713;
+  --neon1: #00f6ff;
+  --neon2: #ff00d4;
+  --accent: #7afcff;
+  --muted: rgba(207,239,255,0.65);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
+  /* Убираем overflow: hidden чтобы была прокрутка */
+}
+
+body {
+  background: radial-gradient(600px 240px at 10% 10%, rgba(0,246,255,0.02), transparent),
+              radial-gradient(500px 200px at 90% 90%, rgba(255,0,212,0.015), transparent),
+              var(--bg);
+  color: var(--muted);
+  display: flex;
+  align-items: flex-start; /* Меняем center на flex-start для прокрутки */
+  justify-content: center;
+  padding: 12px;
+  min-height: 100vh; /* Добавляем минимальную высоту */
+  overflow-y: auto; /* Включаем вертикальную прокрутку для body */
+}
+
+.shell {
+  width: 100%;
+  max-width: 960px;
+  text-align: center;
+  margin: 0 auto; /* Центрируем контент */
+  padding: 20px 0; /* Добавляем отступы сверху и снизу для прокрутки */
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 0 6px 24px rgba(0,246,255,0.08);
+  background: linear-gradient(135deg, var(--neon1), var(--neon2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h1 {
+  color: #fff;
+  font-size: 28px;
+  margin: 0 0 20px;
+}
+
+.game-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px; /* Добавляем отступ снизу */
+}
+
+.game-card {
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  padding: 16px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.04);
+}
+
+.game-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #021018;
+  font-weight: 900;
+  font-size: 24px;
+  position: relative;
+}
+
+/* Иконка для 2048 */
+.neon-icon {
+  background: linear-gradient(135deg, #00e9ff, #ff2ab2);
+}
+
+.neon-icon::before {
+  content: "2048";
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* Иконка для Block Blast */
+.blockblast-icon {
+  background: linear-gradient(135deg, #ff6f61, #6b5b95);
+}
+
+.blockblast-icon::before {
+  content: "BB";
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* Иконка для Color Sequence */
+.color-icon {
+  background: linear-gradient(135deg, #ff4757, #3742fa, #2ed573, #ffa502);
+  position: relative;
+  overflow: hidden;
+}
+
+.color-icon::before {
+  content: "CS";
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* Иконка для Генератора Хаоса */
+.chaos-icon {
+  background: linear-gradient(135deg, #ff6f61, #6b5b95, #d46bff);
+  position: relative;
+  overflow: hidden;
+}
+
+.chaos-icon::before {
+  content: "CH";
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.chaos-icon::after {
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+}
+
+.game-card h2 {
+  color: #fff;
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.game-card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 20px 0; /* Добавляем отступы для footer */
+}
+
+footer a {
+  color: var(--neon1);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  body {
+    padding: 12px 8px; /* Увеличиваем боковые отступы */
+    align-items: flex-start; /* Выравниваем по верху */
+    min-height: 100vh;
+    height: auto; /* Разрешаем высоту увеличиваться */
+    overflow-y: auto; /* Включаем вертикальную прокрутку */
+  }
+
+  .shell {
+    padding: 10px 0; /* Добавляем отступы сверху и снизу */
+    min-height: auto; /* Убираем минимальную высоту для оболочки */
+  }
+
+  .game-list {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin: 0 0 16px;
+  }
+  
+  .logo {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  
+  .game-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .neon-icon::before,
+  .blockblast-icon::before,
+  .color-icon::before,
+  .chaos-icon::before {
+    font-size: 20px;
+  }
+
+  .game-card {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 8px 6px;
+  }
+  
+  .game-card {
+    padding: 12px;
+  }
+  
+  .game-card h2 {
+    font-size: 18px;
+  }
+  
+  .game-card p {
+    font-size: 13px;
+  }
+  
+  .game-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .neon-icon::before,
+  .blockblast-icon::before,
+  .color-icon::before,
+  .chaos-icon::before {
+    font-size: 18px;
+  }
+
+  footer {
+    padding: 15px 0;
+    font-size: 11px;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-height: 600px) and (max-width: 768px) {
+  body {
+    padding: 6px 4px;
+    overflow-y: auto; /* Обеспечиваем прокрутку на маленьких экранах */
+  }
+  
+  .shell {
+    padding: 5px 0;
+  }
+  
+  header {
+    margin-bottom: 12px;
+  }
+  
+  h1 {
+    margin: 0 0 12px;
+    font-size: 22px;
+  }
+  
+  .game-list {
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .game-card {
+    padding: 10px;
+  }
+  
+  .game-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+  }
+  
+  .neon-icon::before,
+  .blockblast-icon::before,
+  .color-icon::before,
+  .chaos-icon::before {
+    font-size: 16px;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    padding: 4px;
+    overflow-y: auto; /* Обеспечиваем прокрутку в ландшафтном режиме */
+  }
+  
+  .shell {
+    max-width: 100%;
+    padding: 10px 0;
+  }
+  
+  .game-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .game-card {
+    padding: 8px;
+  }
+  
+  .game-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 6px;
+  }
+  
+  .game-card h2 {
+    font-size: 14px;
+    margin: 0 0 4px;
+  }
+  
+  .game-card p {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+}
+
+/* Дополнительные улучшения для очень маленьких экранов */
+@media (max-height: 400px) {
+  body {
+    padding: 2px;
+  }
+  
+  .shell {
+    padding: 5px 0;
+  }
+  
+  header {
+    margin-bottom: 8px;
+  }
+  
+  h1 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  
+  .game-list {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  
+  footer {
+    padding: 10px 0;
+    font-size: 10px;
+  }
+}

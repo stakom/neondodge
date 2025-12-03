@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Stakom - Генератор Хаоса</title>
+  <link rel="stylesheet" href="chaos.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%23ff6f61'>S</text></svg>">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <a href="index.html" class="logo">Stakom</a>
+        <div class="game-logo">CH</div>
+      </div>
+      <div>
+        <h1>Генератор Хаоса</h1>
+        <div class="subtitle muted">Защитите контейнер от шаров! Игра длится 200 секунд</div>
+      </div>
+    </header>
+    
+    <div class="card">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+    
+    <div class="ui">
+      <div class="panel">
+        <h2>Управление</h2>
+        <div class="muted">Рисуйте линии, чтобы защитить контейнер внизу</div>
+        <div class="controls">
+          <button id="btnStart" class="btn primary">▶ Начать игру</button>
+          <button id="btnClear" class="btn">🗑️ Очистить</button>
+          <a href="index.html"><button class="btn">↩ В меню</button></a>
+        </div>
+        <div class="goal-panel">
+          <div class="goal-text">🎯 Цель: не допустить попадания более 150 шаров в контейнер за 200 секунд</div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>Разноцветные шары</h2>
+        <div class="muted">Все шары одинаково отскакивают от линий</div>
+        <div class="ball-types">
+          <div class="ball-type">
+            <div class="ball-preview ball-red"></div>
+            <span class="ball-label">Красные шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-blue"></div>
+            <span class="ball-label">Синие шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-green"></div>
+            <span class="ball-label">Зеленые шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview ball-purple"></div>
+            <span class="ball-label">Фиолетовые шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview" style="background: #ffd166; box-shadow: 0 0 8px #ffd166"></div>
+            <span class="ball-label">Желтые шары</span>
+          </div>
+          <div class="ball-type">
+            <div class="ball-preview" style="background: #06d6a0; box-shadow: 0 0 8px #06d6a0"></div>
+            <span class="ball-label">Бирюзовые</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>Статистика</h2>
+        <div class="score-row">
+          <span class="muted">Активных шаров</span>
+          <span class="score-big" id="ballCount">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Шаров в контейнере</span>
+          <span class="score-big" id="containerCount">0</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Лимит контейнера</span>
+          <span class="score-big" id="maxBalls">0/150</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Оставшееся время</span>
+          <span class="score-big" id="timer">3:20</span>
+        </div>
+        <div class="score-row">
+          <span class="muted">Линий нарисовано</span>
+          <span class="score-big" id="lineCount">0</span>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+    </footer>
+  </div>
+
+  <script src="chaos.js"></script>
+</body>
+</html>

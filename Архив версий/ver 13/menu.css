@@ -9,10 +9,6 @@
   --card-bg: rgba(255,255,255,0.03);
   --card-border: rgba(255,255,255,0.08);
   --card-hover: rgba(255,255,255,0.06);
-  --gold: #FFD700;
-  --gold-dark: #B8860B;
-  --silver: #C0C0C0;
-  --bronze: #CD7F32;
 }
 
 * {
@@ -203,7 +199,7 @@ h1::after {
   transform: scale(1.1) rotate(5deg);
 }
 
-/* Обновленные иконки со смайликами */
+/* Обновленные иконки ТОЛЬКО со смайликами */
 .neon-icon {
   background: linear-gradient(135deg, #00e9ff, #ff2ab2);
   box-shadow: 0 4px 20px rgba(0, 233, 255, 0.3);
@@ -297,48 +293,6 @@ h1::after {
   background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
   border-radius: 50%;
   animation: pulse 2s infinite ease-in-out;
-}
-
-/* НОВАЯ ИКОНКА: Финансовый алхимик */
-.alchemist-icon {
-  background: linear-gradient(135deg, var(--gold), var(--gold-dark), var(--bronze));
-  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.alchemist-icon::before {
-  content: "💰";
-  font-size: clamp(28px, 8vw, 36px);
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  z-index: 2;
-  position: relative;
-}
-
-.alchemist-icon::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 70%
-  );
-  animation: shineEffect 3s infinite linear;
-  transform: rotate(45deg);
-}
-
-@keyframes shineEffect {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
 }
 
 @keyframes gradientShift {
@@ -493,8 +447,7 @@ footer a:hover::after {
   .blockblast-icon::before,
   .tetris-icon::before,
   .color-icon::before,
-  .chaos-icon::before,
-  .alchemist-icon::before {
+  .chaos-icon::before {
     font-size: 24px;
   }
 }
@@ -528,8 +481,7 @@ footer a:hover::after {
   .blockblast-icon::before,
   .tetris-icon::before,
   .color-icon::before,
-  .chaos-icon::before,
-  .alchemist-icon::before {
+  .chaos-icon::before {
     font-size: 22px;
   }
 }
