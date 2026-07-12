@@ -3,203 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinterest Lite (упрощённый)</title>
+    <title>Поиск картинок Pinterest</title>
     <style>
-        body { background: #f0f0f0; font-family: Arial, sans-serif; font-size: 14px; max-width: 600px; margin: 0 auto; padding: 8px; }
-        input, button { font-size: 16px; padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; border-radius: 4px; border: 1px solid #aaa; }
-        button { background: #e60023; color: white; border: none; font-weight: bold; }
-        .card { background: white; padding: 10px; margin-bottom: 12px; border-radius: 6px; }
-        .card img { max-width: 100%; height: auto; display: block; margin: 0 auto 6px; border-radius: 4px; background: #eee; }
-        .card a { color: #e60023; word-break: break-all; }
-        .loader { text-align: center; color: #666; padding: 20px; display: none; }
-        .error { background: #f2dede; color: #b94a48; padding: 10px; border-radius: 4px; }
-        .link-only { background: #f9f9f9; padding: 6px; margin: 4px 0; }
+        body { background: #f0f0f0; font-family: Arial, sans-serif; font-size: 16px; max-width: 500px; margin: 30px auto; padding: 10px; }
+        input, button { font-size: 18px; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; border-radius: 6px; border: 1px solid #aaa; }
+        button { background: #e60023; color: white; border: none; }
+        small { color: #888; }
     </style>
 </head>
 <body>
-
-    <h2>📌 Pinterest Lite (для старых телефонов)</h2>
-    <form id="searchForm">
-        <input type="text" id="queryInput" placeholder="например: cat" required>
-        <button type="submit">🔍 Искать</button>
+    <h2>📌 Pinterest Lite</h2>
+    <p>Введите запрос — откроется Google Images с картинками с Pinterest.</p>
+    <form action="https://www.google.com/search" method="GET" target="_blank">
+        <input type="hidden" name="tbm" value="isch">
+        <input type="text" name="q" placeholder="например: кот" required value="site:pinterest.com ">
+        <button type="submit">🔍 Искать через Google</button>
     </form>
-
-    <div id="loader" class="loader">⏳ Загрузка… (до 30 сек)</div>
-    <div id="results"></div>
-    <small>Картинки сжаты, если не грузятся — показываем ссылки</small>
-
-    <script>
-        // ---- ОБХОД СТАРЫХ БРАУЗЕРОВ ----
-        var form = document.getElementById('searchForm');
-        var queryInput = document.getElementById('queryInput');
-        var resultsDiv = document.getElementById('results');
-        var loader = document.getElementById('loader');
-
-        // Сжатие через weserv (если картинка не грузится — оставляем оригинал)
-        function compressUrl(url) {
-            if (!url) return '';
-            return 'https://images.weserv.nl/?url=' + encodeURIComponent(url) + '&w=250&h=250&fit=cover&q=50';
-        }
-
-        // ---- ОСНОВНАЯ ФУНКЦИЯ ПОИСКА (без fetch, только XHR) ----
-        function searchPinterest(query) {
-            loader.style.display = 'block';
-            resultsDiv.innerHTML = '';
-
-            // Пробуем два прокси по очереди
-            var proxies = [
-                'https://api.allorigins.win/raw?url=',
-                'https://corsproxy.io/?'
-            ];
-            var currentProxyIndex = 0;
-
-            // URL запроса к Pinterest (имитация поиска)
-            var baseUrl = 'https://www.pinterest.com/resource/BaseSearchResource/get/?source_url=/search/pins/?q=' + encodeURIComponent(query) + '&data={"options":{"query":"' + encodeURIComponent(query) + '","scope":"pins"}}';
-
-            function tryNextProxy() {
-                if (currentProxyIndex >= proxies.length) {
-                    // Все прокси не сработали — пробуем прямой запрос (редко работает, но вдруг)
-                    sendRequest(baseUrl, true);
-                    return;
-                }
-                var proxy = proxies[currentProxyIndex];
-                var fullUrl = proxy + encodeURIComponent(baseUrl);
-                sendRequest(fullUrl, false);
-            }
-
-            function sendRequest(url, isDirect) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                // Если прямой запрос — добавляем заголовок, чтобы имитировать браузер
-                if (isDirect) {
-                    xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-                }
-                xhr.timeout = 25000; // 25 секунд
-
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText);
-                            var pins = data?.resource_response?.data?.results || [];
-                            if (pins.length === 0) {
-                                // пробуем парсить как HTML (если вдруг вернулся HTML)
-                                parseHtmlFallback(xhr.responseText);
-                                return;
-                            }
-                            renderPins(pins);
-                        } catch (e) {
-                            // Если JSON не спарсился, пробуем как HTML
-                            parseHtmlFallback(xhr.responseText);
-                        }
-                    } else {
-                        // Ошибка — переходим к следующему прокси
-                        currentProxyIndex++;
-                        tryNextProxy();
-                    }
-                };
-
-                xhr.onerror = function() {
-                    currentProxyIndex++;
-                    tryNextProxy();
-                };
-
-                xhr.ontimeout = function() {
-                    currentProxyIndex++;
-                    tryNextProxy();
-                };
-
-                xhr.send();
-            }
-
-            // ---- ПАРСИНГ HTML (если JSON не пришёл) ----
-            function parseHtmlFallback(html) {
-                var imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/gi;
-                var matches = [];
-                var match;
-                while ((match = imgRegex.exec(html)) !== null) {
-                    var src = match[1];
-                    if (src && src.indexOf('pinimg.com') !== -1) {
-                        matches.push(src);
-                    }
-                }
-                if (matches.length === 0) {
-                    // Не нашли картинок — показываем ссылки на найденные URL
-                    var linkRegex = /https:\/\/[^\s"]+pinterest[^\s"]+/gi;
-                    var links = html.match(linkRegex) || [];
-                    if (links.length > 0) {
-                        showLinksOnly(links);
-                    } else {
-                        resultsDiv.innerHTML = '<div class="error">😕 Ничего не найдено. Попробуйте другой запрос.</div>';
-                    }
-                } else {
-                    // Показываем найденные картинки (без дополнительной информации)
-                    var htmlOut = '';
-                    for (var i = 0; i < Math.min(matches.length, 20); i++) {
-                        var img = matches[i];
-                        // Убираем параметры размера, оставляем оригинал
-                        var clean = img.replace(/\/\d+x\d+\//, '/originals/');
-                        var compressed = compressUrl(clean);
-                        htmlOut += '<div class="card"><img src="' + compressed + '" onerror="this.style.display=\'none\'" loading="lazy"><a href="' + clean + '" target="_blank">🔗 Открыть оригинал</a></div>';
-                    }
-                    resultsDiv.innerHTML = htmlOut;
-                }
-                loader.style.display = 'none';
-            }
-
-            // ---- ОТОБРАЖЕНИЕ КАРТИНОК ИЗ JSON ----
-            function renderPins(pins) {
-                var html = '';
-                var count = 0;
-                for (var i = 0; i < pins.length && count < 20; i++) {
-                    var pin = pins[i];
-                    var imgUrl = pin?.images?.orig?.url || pin?.images?.236x?.url || pin?.image?.large?.url || '';
-                    if (imgUrl) {
-                        count++;
-                        var compressed = compressUrl(imgUrl);
-                        var link = pin?.link || 'https://pinterest.com/pin/' + pin.id;
-                        html += '<div class="card">';
-                        html += '<img src="' + compressed + '" onerror="this.style.display=\'none\'" loading="lazy">';
-                        html += '<a href="' + link + '" target="_blank">🔗 Открыть на Pinterest</a>';
-                        html += '</div>';
-                    }
-                }
-                if (!html) {
-                    // Если картинок нет в JSON, пробуем поискать в тексте ответа
-                    parseHtmlFallback(JSON.stringify(pins));
-                    return;
-                }
-                resultsDiv.innerHTML = html;
-                loader.style.display = 'none';
-            }
-
-            // ---- ПОКАЗ ТОЛЬКО ССЫЛОК (если картинки не грузятся) ----
-            function showLinksOnly(links) {
-                var html = '<div class="error">⚠️ Картинки не загрузились, но вот ссылки (откройте по одной):</div>';
-                for (var i = 0; i < Math.min(links.length, 20); i++) {
-                    html += '<div class="link-only"><a href="' + links[i] + '" target="_blank">' + links[i] + '</a></div>';
-                }
-                resultsDiv.innerHTML = html;
-                loader.style.display = 'none';
-            }
-
-            // ---- ЗАПУСК ----
-            tryNextProxy();
-        }
-
-        // ---- ОБРАБОТЧИК ФОРМЫ ----
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var query = queryInput.value.trim();
-            if (query) {
-                searchPinterest(query);
-            }
-        });
-
-        // Автозаполнение примера
-        window.addEventListener('load', function() {
-            queryInput.placeholder = 'например: sunset, flowers';
-        });
-    </script>
-
+    <small>Все картинки сжаты Google, работают на любом телефоне.</small>
 </body>
 </html>
