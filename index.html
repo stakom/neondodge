@@ -1,71 +1,176 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stakom - Игровая коллекция</title>
-  <link rel="stylesheet" href="menu.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%2300f6ff'>S</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinterest Lite (для кнопочных)</title>
+    <style>
+        body {
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 8px;
+            color: #222;
+        }
+        input, button {
+            font-size: 16px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            background: white;
+        }
+        button {
+            background: #e60023;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .card {
+            background: white;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+        .card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 6px;
+            border-radius: 4px;
+            background: #eee;
+        }
+        .card a {
+            color: #e60023;
+            text-decoration: none;
+            font-size: 13px;
+            word-break: break-all;
+        }
+        .loader {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            display: none;
+        }
+        .error {
+            color: #b94a48;
+            background: #f2dede;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        small {
+            color: #888;
+            font-size: 12px;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <div class="bg-animation"></div>
-  
-  <div class="shell">
-    <div class="main-content">
-      <header>
-        <a href="index.html" class="logo">Stakom</a>
-      </header>
-      
-      <h1>Выберите игру</h1>
-      
-      <div class="game-list">
-        <a href="neon.html" class="game-card">
-          <div class="game-icon neon-icon"></div>
-          <h2>2048</h2>
-          <p>Классическая головоломка: соединяйте плитки, объединяйте числа до 2048</p>
-        </a>
-        
-        <a href="blockblast.html" class="game-card">
-          <div class="game-icon blockblast-icon"></div>
-          <h2>Block Blast</h2>
-          <p>Захватывающая головоломка: размещайте блоки, очищайте линии и набирайте очки</p>
-        </a>
-        
-        <a href="tetris.html" class="game-card">
-          <div class="game-icon tetris-icon"></div>
-          <h2>Тетрис</h2>
-          <p>Классическая головоломка: вращайте и размещайте фигуры, очищайте линии</p>
-        </a>
-        
-        <a href="color.html" class="game-card">
-          <div class="game-icon color-icon"></div>
-          <h2>Запоминашки</h2>
-          <p>Тренируйте память: запоминайте и повторяйте световые последовательности</p>
-        </a>
-        
-        <a href="chaos.html" class="game-card">
-          <div class="game-icon chaos-icon"></div>
-          <h2>Хаотичные попрыгунчики</h2>
-          <p>Защищайте контейнер от хаотичных шариков, создавая барьеры и препятствия</p>
-        </a>
-        
-        <!-- НОВАЯ ИГРА: Финансовый алхимик -->
-        <a href="accounting.html" class="game-card">
-          <div class="game-icon alchemist-icon"></div>
-          <h2>Финансовый алхимик</h2>
-          <p>Объединяйте финансовые инструменты, создавайте стратегии и увеличивайте капитал</p>
-        </a>
-      </div>
-    </div>
-    
-    <footer>
-      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
-    </footer>
-  </div>
 
-  <script src="menu.js"></script>
+    <h2 style="margin: 5px 0;">📌 Pinterest Lite</h2>
+    <p style="font-size: 13px; color: #555;">Введите запрос (например: <i>cat</i> или <i>nature</i>)</p>
+
+    <form id="searchForm">
+        <input type="text" id="queryInput" placeholder="Что ищем?" required>
+        <button type="submit">🔍 Найти картинки</button>
+    </form>
+
+    <div id="loader" class="loader">⏳ Загрузка... (до 30 сек)</div>
+    <div id="results"></div>
+    <small>Изображения сжаты для слабых телефонов</small>
+
+    <script>
+        const form = document.getElementById('searchForm');
+        const queryInput = document.getElementById('queryInput');
+        const resultsDiv = document.getElementById('results');
+        const loader = document.getElementById('loader');
+
+        // Прокси для сжатия картинок (уменьшает вес в 5-10 раз)
+        function getCompressedUrl(originalUrl) {
+            if (!originalUrl) return '';
+            // Используем бесплатный сервис кеширования/сжатия
+            return 'https://images.weserv.nl/?url=' + encodeURIComponent(originalUrl) + '&w=300&h=300&fit=cover&q=60';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            resultsDiv.innerHTML = '';
+            loader.style.display = 'block';
+
+            try {
+                // 1. Ищем через RSS-ленту Pinterest (это единственный рабочий способ без API)
+                const rssUrl = `https://www.pinterest.com/resource/BaseSearchResource/get/?source_url=/search/pins/?q=${encodeURIComponent(query)}&data={\"options\":{\"query\":\"${encodeURIComponent(query)}\",\"scope\":\"pins\"}}`;
+                
+                // Используем прокси для обхода CORS (anycors)
+                const proxy = 'https://api.allorigins.win/raw?url=';
+                const response = await fetch(proxy + encodeURIComponent(rssUrl));
+                
+                if (!response.ok) throw new Error('Сеть ответила ошибкой');
+
+                const data = await response.json();
+                
+                // Парсим ответ Pinterest (сложная структура)
+                const pins = data?.resource_response?.data?.results || [];
+                
+                if (pins.length === 0) {
+                    resultsDiv.innerHTML = '<div class="error">😕 Ничего не найдено. Попробуйте другой запрос.</div>';
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                // Отображаем первые 15 результатов
+                let html = '';
+                pins.slice(0, 15).forEach(pin => {
+                    const imgUrl = pin?.images?.orig?.url || pin?.images?.236x?.url || '';
+                    const alt = pin?.title || 'Pinterest image';
+                    const link = pin?.link || `https://pinterest.com/pin/${pin.id}`;
+
+                    if (imgUrl) {
+                        const compressed = getCompressedUrl(imgUrl);
+                        html += `
+                            <div class="card">
+                                <img src="${compressed}" alt="${alt}" loading="lazy" onerror="this.style.display='none'">
+                                <a href="${link}" target="_blank">🔗 Открыть на Pinterest</a>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (!html) {
+                    html = '<div class="error">⚠️ Не удалось загрузить изображения (возможно, нет картинок).</div>';
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } catch (err) {
+                console.error(err);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Ошибка: Pinterest временно недоступен для такого запроса.<br>
+                        <span style="font-size:12px;">Попробуйте позже или измените запрос.</span>
+                    </div>
+                `;
+            }
+
+            loader.style.display = 'none';
+        });
+
+        // Подсказка: при загрузке показываем пример
+        window.addEventListener('load', () => {
+            queryInput.placeholder = 'например: sunset, flowers, car';
+        });
+    </script>
+
 </body>
 </html>
