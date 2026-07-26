@@ -1,24 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поиск картинок Pinterest</title>
+    <title>Фото</title>
     <style>
-        body { background: #f0f0f0; font-family: Arial, sans-serif; font-size: 16px; max-width: 500px; margin: 30px auto; padding: 10px; }
-        input, button { font-size: 18px; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; border-radius: 6px; border: 1px solid #aaa; }
-        button { background: #e60023; color: white; border: none; }
-        small { color: #888; }
+        /* Минимум стилей — только для читаемости на маленьких экранах */
+        body {
+            background: #c0c0c0;   /* серый фон, как у старых телефонов */
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 8px;
+            padding: 4px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Кнопки крупные, на весь экран, с четкими границами */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 0;
+            margin-bottom: 12px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            background: #e0e0e0;
+            border: 4px solid #444;
+            border-radius: 0;        /* без скруглений — как в старых телефонах */
+            color: #000;
+            cursor: pointer;
+            box-shadow: inset 0 -4px 0 #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            background: #aaa;
+            box-shadow: inset 0 2px 0 #444;
+        }
+
+        /* Область для фото — рамка, минимум отступов */
+        .photo-box {
+            background: #fff;
+            border: 4px solid #333;
+            padding: 6px;
+            margin-top: 16px;
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-box img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border: 2px solid #555;
+        }
+
+        .placeholder {
+            font-size: 20px;
+            color: #333;
+            padding: 12px;
+            background: #d0d0d0;
+            width: 100%;
+        }
+
+        /* Инфо строка мелким шрифтом */
+        .info {
+            font-size: 14px;
+            color: #222;
+            margin-top: 12px;
+            text-align: center;
+            border-top: 2px solid #666;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <h2>📌 Pinterest Lite</h2>
-    <p>Введите запрос — откроется Google Images с картинками с Pinterest.</p>
-    <form action="https://www.google.com/search" method="GET" target="_blank">
-        <input type="hidden" name="tbm" value="isch">
-        <input type="text" name="q" placeholder="например: кот" required value="site:pinterest.com ">
-        <button type="submit">🔍 Искать через Google</button>
-    </form>
-    <small>Все картинки сжаты Google, работают на любом телефоне.</small>
+<div class="container">
+
+    <!-- 4 кнопки на всю ширину -->
+    <button class="btn" data-photo="photo1">photo1</button>
+    <button class="btn" data-photo="photo2">photo2</button>
+    <button class="btn" data-photo="szhato1">szhato1</button>
+    <button class="btn" data-photo="szhato2">szhato2</button>
+
+    <!-- место для фото -->
+    <div class="photo-box" id="photoBox">
+        <div class="placeholder">нажми кнопку</div>
+    </div>
+
+    <div class="info">файлы .jpg в той же папке</div>
+</div>
+
+<script>
+    (function() {
+        var box = document.getElementById('photoBox');
+        var buttons = document.querySelectorAll('.btn');
+
+        // функция показа фото
+        function showPhoto(name) {
+            // все фото лежат рядом с html, расширение .jpg
+            var imgSrc = name + '.jpg';
+
+            // создаём картинку
+            var img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = name;
+
+            // если фото не загрузилось (404 или ошибка)
+            img.onerror = function() {
+                box.innerHTML = '<div class="placeholder" style="background:#b0b0b0; color:#600;">❌ ' + name + '.jpg не найден</div>';
+            };
+
+            // очищаем и вставляем
+            box.innerHTML = '';
+            box.appendChild(img);
+        }
+
+        // вешаем обработчики
+        for (var i = 0; i < buttons.length; i++) {
+            (function(btn) {
+                btn.addEventListener('click', function() {
+                    var photo = this.getAttribute('data-photo');
+                    if (photo) {
+                        showPhoto(photo);
+                    } else {
+                        box.innerHTML = '<div class="placeholder">ошибка</div>';
+                    }
+                });
+            })(buttons[i]);
+        }
+
+        // (можно предзагрузить ничего, оставляем плейсхолдер)
+        console.log('готово. нажми кнопку');
+    })();
+</script>
+
 </body>
 </html>
