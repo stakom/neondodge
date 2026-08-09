@@ -1,189 +1,71 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фото</title>
-    <style>
-        /* Минимум стилей — только для читаемости на маленьких экранах */
-        body {
-            background: #c0c0c0;
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 8px;
-            padding: 4px;
-        }
-
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 18px 0;
-            margin-bottom: 12px;
-            font-size: 22px;
-            font-weight: bold;
-            text-align: center;
-            background: #e0e0e0;
-            border: 4px solid #444;
-            border-radius: 0;
-            color: #000;
-            cursor: pointer;
-            box-shadow: inset 0 -4px 0 #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn:active {
-            background: #aaa;
-            box-shadow: inset 0 2px 0 #444;
-        }
-
-        /* две кнопки в ряд */
-        .nav-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .nav-row .btn {
-            flex: 1;
-            padding: 18px 0;
-            font-size: 20px;
-            margin-bottom: 0;
-        }
-
-        .photo-box {
-            background: #fff;
-            border: 4px solid #333;
-            padding: 6px;
-            margin-top: 16px;
-            text-align: center;
-            min-height: 140px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .photo-box img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            border: 2px solid #555;
-        }
-
-        .placeholder {
-            font-size: 20px;
-            color: #333;
-            padding: 12px;
-            background: #d0d0d0;
-            width: 100%;
-        }
-
-        .info {
-            font-size: 14px;
-            color: #222;
-            margin-top: 12px;
-            text-align: center;
-            border-top: 2px solid #666;
-            padding-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>stakom - Игровая коллекция</title>
+  <link rel="stylesheet" href="menu.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='2' y='20' font-family='Arial' font-size='24' fill='%2300f6ff'>S</text></svg>">
 </head>
 <body>
-<div class="container">
-
-    <!-- 4 основные кнопки -->
-    <button class="btn" data-photo="photo1">photo1</button>
-    <button class="btn" data-photo="photo2">photo2</button>
-    <button class="btn" data-photo="szhato1">szhato1</button>
-    <button class="btn" data-photo="szhato2">szhato2</button>
-
-    <!-- две навигационные кнопки -->
-    <div class="nav-row">
-        <button class="btn" id="prevBtn">◀ прошлое</button>
-        <button class="btn" id="nextBtn">следующее ▶</button>
+  <div class="bg-animation"></div>
+  
+  <div class="shell">
+    <div class="main-content">
+      <header>
+        <a href="index.html" class="logo">Stakom</a>
+      </header>
+      
+      <h1>Выберите игру</h1>
+      
+      <div class="game-list">
+        <a href="neon.html" class="game-card">
+          <div class="game-icon neon-icon"></div>
+          <h2>2048</h2>
+          <p>Классическая головоломка: соединяйте плитки, объединяйте числа до 2048</p>
+        </a>
+        
+        <a href="blockblast.html" class="game-card">
+          <div class="game-icon blockblast-icon"></div>
+          <h2>Block Blast</h2>
+          <p>Захватывающая головоломка: размещайте блоки, очищайте линии и набирайте очки</p>
+        </a>
+        
+        <a href="tetris.html" class="game-card">
+          <div class="game-icon tetris-icon"></div>
+          <h2>Тетрис</h2>
+          <p>Классическая головоломка: вращайте и размещайте фигуры, очищайте линии</p>
+        </a>
+        
+        <a href="color.html" class="game-card">
+          <div class="game-icon color-icon"></div>
+          <h2>Запоминашки</h2>
+          <p>Тренируйте память: запоминайте и повторяйте световые последовательности</p>
+        </a>
+        
+        <a href="chaos.html" class="game-card">
+          <div class="game-icon chaos-icon"></div>
+          <h2>Хаотичные попрыгунчики</h2>
+          <p>Защищайте контейнер от хаотичных шариков, создавая барьеры и препятствия</p>
+        </a>
+        
+        <!-- НОВАЯ ИГРА: Финансовый алхимик -->
+        <a href="accounting.html" class="game-card">
+          <div class="game-icon alchemist-icon"></div>
+          <h2>Финансовый алхимик</h2>
+          <p>Объединяйте финансовые инструменты, создавайте стратегии и увеличивайте капитал</p>
+        </a>
+      </div>
     </div>
+    
+    <footer>
+      Разработчик: stakom | Telegram: <a href="https://t.me/stakomoto">@stakomoto</a> | Создано в 2025 году
+    </footer>
+  </div>
 
-    <!-- место для фото -->
-    <div class="photo-box" id="photoBox">
-        <div class="placeholder">нажми кнопку</div>
-    </div>
-
-    <div class="info">© stakom</div>
-</div>
-
-<script>
-    (function() {
-        var box = document.getElementById('photoBox');
-        var buttons = document.querySelectorAll('.btn[data-photo]');
-
-        // --- список для навигации mem1, mem2, ... ---
-        var memList = [];
-        // генерируем mem1 ... mem20 (можно увеличить)
-        for (var i = 1; i <= 20; i++) {
-            memList.push('mem' + i);
-        }
-        var currentIndex = 0;  // индекс текущего фото в memList
-
-        // --- функция показа фото по имени ---
-        function showPhoto(name) {
-            var img = document.createElement('img');
-            img.src = name + '.jpg';
-            img.alt = name;
-
-            img.onerror = function() {
-                box.innerHTML = '<div class="placeholder" style="background:#b0b0b0; color:#600;">❌ ' + name + '.jpg не найден</div>';
-            };
-
-            box.innerHTML = '';
-            box.appendChild(img);
-        }
-
-        // --- показать mem по индексу ---
-        function showMemByIndex(index) {
-            if (index < 0) index = 0;
-            if (index >= memList.length) index = memList.length - 1;
-            currentIndex = index;
-            showPhoto(memList[currentIndex]);
-        }
-
-        // --- обработчики для основных кнопок ---
-        for (var i = 0; i < buttons.length; i++) {
-            (function(btn) {
-                btn.addEventListener('click', function() {
-                    var photo = this.getAttribute('data-photo');
-                    if (photo) {
-                        showPhoto(photo);
-                    }
-                });
-            })(buttons[i]);
-        }
-
-        // --- кнопка "прошлое" ---
-        document.getElementById('prevBtn').addEventListener('click', function() {
-            if (memList.length === 0) return;
-            var newIndex = currentIndex - 1;
-            if (newIndex < 0) newIndex = memList.length - 1; // зацикливание
-            showMemByIndex(newIndex);
-        });
-
-        // --- кнопка "следующее" ---
-        document.getElementById('nextBtn').addEventListener('click', function() {
-            if (memList.length === 0) return;
-            var newIndex = currentIndex + 1;
-            if (newIndex >= memList.length) newIndex = 0; // зацикливание
-            showMemByIndex(newIndex);
-        });
-
-        // (опционально) при первом нажатии на "следующее" покажет mem1
-        // можно предустановить, но оставим как есть
-
-        console.log('готово. mem1..mem' + memList.length);
-    })();
-</script>
-
+  <script src="menu.js"></script>
 </body>
 </html>
